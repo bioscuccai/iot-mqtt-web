@@ -1,0 +1,100 @@
+var app = angular.module('app', ['ngMaterial', 'ui.router', 'btford.socket-io', 'chart.js', 'hljs']);
+
+app.config(function(hljsServiceProvider){
+  hljsServiceProvider.setOptions({
+    tabReplace: '  '
+  });
+});
+
+app.config(function($stateProvider, $urlRouterProvider) {
+  $urlRouterProvider.otherwise("/");
+  
+  $stateProvider.state("default", {
+    url: '/',
+    views: {
+      main: {
+        controller: 'DefaultCtrl',
+        templateUrl: 'templates/default.html',
+        resolve:{
+          credentials: function(DashboardFactory){
+            return DashboardFactory.credentials();
+          }
+        } 
+      }
+    }
+  });
+  
+  $stateProvider.state("devices", {
+    url: '/devices',
+    views: {
+      main: {
+        controller: 'DevicesCtrl',
+        templateUrl: 'templates/devices.html',
+        resolve: {
+          devices: function(DeviceFactory){
+            return DeviceFactory.devices();
+          },
+          applications: function(ApplicationFactory){
+            return ApplicationFactory.applications();
+          }
+        }
+      }
+    }
+  });
+  
+  $stateProvider.state("readings", {
+    url: '/readings',
+    views: {
+      main: {
+        controller: 'ReadingsCtrl',
+        templateUrl: 'templates/readings.html',
+        resolve: {
+            devices: function(DeviceFactory){
+              return DeviceFactory.devices();
+          }
+        }
+      }
+    }
+  });
+  
+  $stateProvider.state("charts", {
+    url: '/charts',
+    views: {
+      main: {
+        controller: 'ChartsCtrl',
+        templateUrl: 'templates/charts.html',
+        resolve: {
+          readings: function(ReadingFactory){
+            return ReadingFactory.readings({});
+          }
+        }
+      }
+    }
+  });
+  
+  $stateProvider.state("messages", {
+    url: '/messages',
+    views: {
+      main: {
+        controller: 'MessagesCtrl',
+        templateUrl: 'templates/messages.html'
+      }
+    }
+  });
+  
+  $stateProvider.state("applications", {
+    url: '/applications',
+    views: {
+      main: {
+        controller: 'ApplicationsCtrl',
+        templateUrl: 'templates/applications.html',
+        resolve: {
+          applications: function(ApplicationFactory){
+            return ApplicationFactory.applications();
+          }
+        }
+      }
+    }
+  });
+});
+

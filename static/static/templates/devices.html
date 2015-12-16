@@ -1,0 +1,27 @@
+<md-content>
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Devices</h2>
+      <md-button ng-click="newDeviceModal()">
+        New
+      </md-button>
+      <md-button ng-click="refreshDevices()">
+        Refresh
+      </md-button>
+    </div>
+  </md-toolbar>
+  <md-list>
+    <md-list-item class="md-3-line" ng-repeat="device in devices" ng-click="selectDevice(device)">
+      <img src="/static/assets/images/media-flash.png" style="height: 50px">
+      <div class="md-list-item-text">
+        <h3>{{device.name}}</h3>
+        <p>
+          <i class="icon ion-calculator"></i>
+          {{device.type}}
+        </p>
+        <p></p>
+      </div>
+      
+    </md-list-item>
+  </md-list>
+</md-content>

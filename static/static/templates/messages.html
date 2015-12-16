@@ -1,0 +1,18 @@
+<md-content>
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Send a message</h2>
+    </div>
+  </md-toolbar>
+  <md-input-container>
+    <label for="data">Message:</label>
+    <textarea ng-model="newMessage.payload">
+      {
+        "targetDevice": "",
+        "targetDeviceType": "",
+        "message": "ok"
+      }
+    </textarea>
+  </md-input-container>
+  <md-button ng-click="sendMessage()">Send message</md-button>
+</md-content>

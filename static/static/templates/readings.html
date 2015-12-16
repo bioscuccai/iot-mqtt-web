@@ -1,0 +1,45 @@
+<md-content>
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Readings</h2>
+      <md-button ng-click="newReadingDialog()">
+        New
+      </md-button>
+      <md-button ng-click="refreshReadings()">
+        Refresh
+      </md-button>
+    </div>
+  </md-toolbar>
+  <md-select ng-model="selectedFilter.deviceName" placeholder="---Device---">
+    <md-option ng-value="">--Device--</md-option>
+    <md-option ng-repeat="deviceName in deviceNames" ng-value="deviceName">{{deviceName}}</md-option>
+  </md-select>
+  <md-select ng-model="selectedFilter.deviceType" placeholder="---Device type---">
+    <md-option ng-value="">--Device type--</md-option>
+    <md-option ng-repeat="deviceType in deviceTypes" ng-value="deviceType">{{deviceType}}</md-option>
+  </md-select>
+  <md-input-container>
+    <label for="readingType">Reading type</label>
+    <input type="text" name="readingType" ng-model="selectedFilter.type">
+  </md-input-container>
+    <div ng-repeat="reading in readings" ng-click="selectReading(reading)">
+      <div hljs hljs-source="reading.dataStr"></div>
+      <p style="margin: 0px">
+        <small style="color: rgb(77, 77, 77)">
+          <i class="icon ion-calculator"></i>
+          {{reading.device.name}}
+          <i class="icon ion-filing"></i>
+          {{reading.device.type}}
+        </small>
+      </p>
+      <p style="margin: 0px">
+        <small style="color: rgb(77, 77, 77)">
+          <i class="icon ion-folder"></i>
+          {{reading.type}}
+          <i class="icon ion-calendar"></i>
+          {{reading.createdAt}}
+        </small>
+      </p>
+      <hr>
+    </div>
+</md-content>

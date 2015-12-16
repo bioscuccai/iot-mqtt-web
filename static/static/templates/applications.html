@@ -1,0 +1,20 @@
+<md-content>
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      Applications
+      <md-button ng-click="newApplicationDialog()">New</md-button>
+      <md-button ng-click="refreshApplications()">Refresh</md-button>
+      
+    </div>
+  </md-toolbar>
+  <md-list>
+    <md-list-item class="md-3-line" ng-repeat="application in applications" ng-click="selectApplication(application)">
+      <img src="/static/assets/images/media-flash.png" style="height: 50px">
+      <h3>
+        {{application.name}}
+      </h3>
+      <p>{{application.description}}</p>
+      <p></p>
+    </md-list-item>
+  </md-list>
+</md-content>

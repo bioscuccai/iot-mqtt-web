@@ -1,0 +1,10 @@
+extends ../layout.jade
+block main
+  form(action='/readings/new' method='post')
+    p
+      |token:
+      input(type='text' name='token')
+    p
+      |data:
+      textarea(name='data')
+    input(type='submit' value='Next')
