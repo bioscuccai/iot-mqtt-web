@@ -21,12 +21,14 @@ function registerDevice(name, type, applicationName){
   let app;
   return schema.Application.findOne({name: applicationName})
   .then(appDb => {
-    schema.Device.create({
-      name: name,
-      type: type,
-      token: securerandom.hex(16),
-      application: appDb
-    });
+    if(appDb){
+      schema.Device.create({
+        name: name,
+        type: type,
+        token: securerandom.hex(16),
+        application: appDb
+      });
+    }
   });
 }
 
@@ -43,7 +45,7 @@ function registerApplication(name, description){
 function storeReading(token, data, type, meta){
   return new Promise(function(resolve, reject) {
     let device;
-    schema.Device.findOne({token}).exec()
+    schema.Device.findOne({token}).populate("application").exec()
     .then(deviceDb=>{
       device=deviceDb;
       if(!device){
@@ -54,12 +56,14 @@ function storeReading(token, data, type, meta){
         device: device._id,
         data: data,
         type: type,
-        loc: [0,0]
+        loc: meta.loc || [0,0]
       });
     })
     .then(reading=>{
       console.log(reading);
-      readingWatcher.emit("new_reading", reading);
+      crayon.info("device:");
+      console.log(device);
+      readingWatcher.emit("new_reading", _.merge(reading, {appToken: device.application.token})); //pass app token too
       return resolve("reading");
     })
     .catch(e=>{
@@ -111,7 +115,8 @@ function validDevice(username, password){
         type: 'device',
         deviceToken: password,
         deviceName: deviceDb.name,
-        deviceType: deviceDb.type
+        deviceType: deviceDb.type,
+        appToken: username
       });
     });
   });
@@ -124,6 +129,10 @@ function validTokenPair(username, password){
   ]);
 }
 function mqttAuthenticate(client, username, password, callback){
+  if(!password || !username){
+    crayon.error("No login given");
+    return callback({status: "login required"}, false);
+  }
   validTokenPair(username, password.toString())
   .then(authData=>{
     client.user=authData;
@@ -184,7 +193,7 @@ function mqttAuthorizePublish(client, topic, payload, callback){
   if(client.user.type==="app"){
     return callback(null, true);
   }
-  if(topic==="send_reading"){
+  if(topic===`send_reading/${client.user.appToken}`){
     return callback(null, true);
   }
   callback({status: "unauthorized"}, false);
@@ -197,12 +206,12 @@ function mqttAuthorizeSubscribe(client, topic, callback){
     crayon.info(`App ${client.user.appName} subscribed to ${topic}`);
     return callback(null, true);
   }
-  if(topic==="appmessage/global"){
+  if(topic===`appmessage/${client.user.appToken}/global`){
     crayon.info(`Device ${client.user.deviceName} subscribed to broadcast`);
     return callback(null, true);
   }
-  if(topic.startsWith("appmessage/device_type/")){
-    let type=topic.replace("appmessage/device_type/", "");
+  if(topic.startsWith(`appmessage/${client.user.appToken}/device_type/`)){
+    let type=topic.replace(`appmessage/${client.user.appToken}/device_type/`, "");
     if(type===client.user.deviceType){
       crayon.info(`Device ${client.user.deviceName} subscribed to type channel: ${type}`);
       return callback(null, true);
@@ -211,8 +220,8 @@ function mqttAuthorizeSubscribe(client, topic, callback){
       return callback({status: "rejected type"}, false);
     }
   }
-  if(topic.startsWith("appmessage/device/")){
-    let deviceToken=topic.replace("appmessage/device/", "");
+  if(topic.startsWith(`appmessage/${client.user.appToken}/device/`)){
+    let deviceToken=topic.replace(`appmessage/${client.user.appToken}/device/`, "");
     if(deviceToken===client.user.deviceToken){
       crayon.info(`Device ${client.user.deviceName} subscribed to private channel`);
       return callback(null, true);
@@ -237,7 +246,7 @@ services.moscaServer.on("clientConnected", (client) => {
   console.log("connected");
 });
 
-function sendMessage(payload){
+function sendMessage(payload, appToken){
   crayon.info("message");
   console.log(payload);
   let deviceFilter={};
@@ -254,7 +263,7 @@ function sendMessage(payload){
     .then(devices=>{
       devices.forEach(device=>{
         services.moscaServer.publish({
-          topic: `appmessage/device/${device.token}`,
+          topic: `appmessage/${appToken}/device/${device.token}`,
           payload: payload.message
         });
       });
@@ -263,7 +272,7 @@ function sendMessage(payload){
   } else if(payload.targetDeviceType){
     crayon.info("targeting device type");
     services.moscaServer.publish({
-      topic: `appmessage/device_type/${payload.targetDeviceType}`,
+      topic: `appmessage/${appToken}/device_type/${payload.targetDeviceType}`,
       payload: payload.message
     });
   //broadcast
@@ -271,34 +280,43 @@ function sendMessage(payload){
     crayon.info("broadcasting");
     console.log(payload.message);
     services.moscaServer.publish({
-      topic: 'appmessage/global',
+      topic: `appmessage/${appToken}/global`,
       payload: payload.message
     });
   }
 }
 
 services.moscaServer.on("published", (packet, client) => {
+  crayon.warn("PUBLISHED MESSAGE");
   console.log(packet);
   console.log("topic: "+packet.topic);
   //console.log("payload: "+packet.payload.toString());
   
   //messages from the application to the devices
   if(packet.topic==="send_message"){
+    crayon.info("NEW MESSAGE");
     let payload=JSON.parse(packet.payload.toString());
-    sendMessage(payload);
+    sendMessage(payload, client.user.appToken);
   }
   
   if(packet.topic==="send_reading"){
-    let payload=JSON.parse(packet.payload.toString());
-    crayon.info("reading");
-    console.log(payload);
-    storeReading(payload.token, payload.data, payload.type, {});
+    try {
+      let payload=JSON.parse(packet.payload.toString());
+      crayon.info("reading");
+      console.log(payload);
+      storeReading(payload.token, payload.data, payload.type, {});
+    } catch(e){
+      crayon.error(`failed to parse payload: ${packet.payload.toString()}`);
+    }
+    
   }
 });
 
 readingWatcher.on("new_reading", reading=>{
+  crayon.info("publised app event");
+  console.log(reading);
   services.moscaServer.publish({
-    topic: 'appevent',
+    topic: `appevent/${reading.appToken}`,
     payload: JSON.stringify(reading)
   });
 });
@@ -310,5 +328,7 @@ module.exports = {
   registerDevice,
   registerApplication,
   readingWatcher,
-  sendMessage
+  sendMessage,
+  validApplication,
+  validDevice
 };

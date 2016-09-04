@@ -7,7 +7,7 @@ app.factory('DashboardFactory', function($http, $q){
   function credentials(){
     var def=$q.defer();
     var creds={};
-    $http.get("http://localhost:5000/api/credentials")
+    $http.get("http://"+window.location.host+"/api/applications/credentials")
     .then(function(response){
       creds=_.merge({}, response.data);
     })
@@ -20,11 +20,22 @@ app.factory('DashboardFactory', function($http, $q){
     credentials: credentials
   };
 });
-
-app.factory("DeviceFactory", function($http, $q){
+/*
+██████  ███████ ██    ██ ██  ██████ ███████ ███████ 
+██   ██ ██      ██    ██ ██ ██      ██      ██      
+██   ██ █████   ██    ██ ██ ██      █████   ███████ 
+██   ██ ██       ██  ██  ██ ██      ██           ██ 
+██████  ███████   ████   ██  ██████ ███████ ███████ 
+*/
+app.factory("DeviceFactory", function($http, $q, GlobalSettings){
   function devices(){
     var def=$q.defer();
-    $http.get("http://localhost:5000/api/devices")
+    $http.get("http://"+window.location.host+"/api/devices",{
+      headers: {
+        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+      }
+    })
     .then(function(response){
       return def.resolve(response.data);
     })
@@ -36,11 +47,16 @@ app.factory("DeviceFactory", function($http, $q){
   
   function newDevice(name, type, applicationName){
     var def=$q.defer();
-    $http.post("http://localhost:5000/api/devices/new", {
+    console.log("new device app: "+applicationName);
+    $http.post("http://"+window.location.host+"/api/devices/new", {
       name: name,
       type: type,
       applicationName: applicationName
-    })
+    }, {
+      headers: {
+        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+      }})
     .then(function(response){
       return def.resolve(response.data);
     }).catch(function (err) {
@@ -51,7 +67,7 @@ app.factory("DeviceFactory", function($http, $q){
   
   function regenToken(oldToken){
     var def=$q.defer();
-    $http.post("http://localhost:5000/api/devices/regen_token", {
+    $http.post("http://"+window.location.host+"/api/devices/regen_token", {
       oldToken: oldToken
     })
     .then(function (response) {
@@ -69,16 +85,25 @@ app.factory("DeviceFactory", function($http, $q){
     regenToken: regenToken
   };
 });
-
-app.factory("ReadingFactory", function($http, $q){
+/*
+██████  ███████  █████  ██████  ██ ███    ██  ██████  ███████ 
+██   ██ ██      ██   ██ ██   ██ ██ ████   ██ ██       ██      
+██████  █████   ███████ ██   ██ ██ ██ ██  ██ ██   ███ ███████ 
+██   ██ ██      ██   ██ ██   ██ ██ ██  ██ ██ ██    ██      ██ 
+██   ██ ███████ ██   ██ ██████  ██ ██   ████  ██████  ███████ 
+*/
+app.factory("ReadingFactory", function($http, $q, GlobalSettings){
   function readings(query_){
     var query=query_||{};
     var def=$q.defer();
-    $http.get("http://localhost:5000/api/readings", {
+    $http.get("http://"+window.location.host+"/api/readings", {
       params: {
         filterDevice: query.deviceName,
         filterDeviceType: query.deviceType,
         filterType: query.type
+      }, headers: {
+        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
       }
     })
     .then(function(response){
@@ -88,11 +113,16 @@ app.factory("ReadingFactory", function($http, $q){
   }
   
   function newReading(token, data, type, meta){
-    return $http.post("http://localhost:5000/api/readings/new", {
+    return $http.post("http://"+window.location.host+"/api/readings/new", {
       token: token,
       data: data,
       type: type,
       meta: meta
+    }, {
+      headers: {
+        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'x-iotfw-devicetoken': token
+      }
     });
   }
   
@@ -101,28 +131,45 @@ app.factory("ReadingFactory", function($http, $q){
     newReading: newReading
   };
 });
-
-app.factory("MessageFactory", function($http, $q){
+/*
+███    ███ ███████ ███████ ███████  █████   ██████  ███████ ███████ 
+████  ████ ██      ██      ██      ██   ██ ██       ██      ██      
+██ ████ ██ █████   ███████ ███████ ███████ ██   ███ █████   ███████ 
+██  ██  ██ ██           ██      ██ ██   ██ ██    ██ ██           ██ 
+██      ██ ███████ ███████ ███████ ██   ██  ██████  ███████ ███████ 
+*/
+app.factory("MessageFactory", function($http, $q, GlobalSettings){
   function newMessage(payload){
-    return $http.post("http://localhost:5000/api/messages", {
+    return $http.post("http://"+window.location.host+"/api/applications/messages", {
       payload: payload
+    }, {
+      headers: {
+      'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+      'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+      }
     });
   }
   return {
     newMessage: newMessage
   };
 });
-
+/*
+ █████  ██████  ██████  ██      ██  ██████  █████  ████████ ██  ██████  ███    ██ ███████ 
+██   ██ ██   ██ ██   ██ ██      ██ ██      ██   ██    ██    ██ ██    ██ ████   ██ ██      
+███████ ██████  ██████  ██      ██ ██      ███████    ██    ██ ██    ██ ██ ██  ██ ███████ 
+██   ██ ██      ██      ██      ██ ██      ██   ██    ██    ██ ██    ██ ██  ██ ██      ██ 
+██   ██ ██      ██      ███████ ██  ██████ ██   ██    ██    ██  ██████  ██   ████ ███████ 
+*/
 app.factory("ApplicationFactory", function($http, $q){
   function newApplication(application){
-    return $http.post("http://localhost:5000/api/applications/new",{
+    return $http.post("http://"+window.location.host+"/api/applications/new",{
       name: application.name,
       description: application.description
     });
   }
   function applications(){
     var def=$q.defer();
-    $http.get("http://localhost:5000/api/applications")
+    $http.get("http://"+window.location.host+"/api/applications")
     .then(function(response){
       return def.resolve(response.data);
     });

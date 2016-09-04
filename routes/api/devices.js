@@ -5,20 +5,18 @@ var _ = require('lodash');
 var schema = require('../../schema');
 var utils = require('../../utils');
 var services = require('../../services');
+var auth = require('../../auth');
 var router=express.Router();
 
-router.get("/devices", (req, res) => {
+router.get("/", auth.authApplication, (req, res) => {
+  console.log(req.headers);
   schema.Device.find({}).populate("application").exec()
   .then(devices => {
     res.json(devices.reverse());
-    /*
-    res.json(devices.map(item=>{
-      return _.merge({}, item, {createdAt: item._id.getTimestamp()});
-    }));*/
   });
 });
 
-router.post("/devices/new", (req, res) => {
+router.post("/new", auth.authApplication, (req, res) => {
   console.log(req.body);
   utils.registerDevice(req.body.name, req.body.type, req.body.applicationName)
   .then(dev=>{

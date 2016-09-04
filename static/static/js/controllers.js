@@ -1,127 +1,20 @@
-app.controller("DefaultCtrl", function($scope, credentials){
+app.controller("DefaultCtrl", function($scope, credentials, GlobalSettings){
   $scope.credentials=credentials;
+  $scope.appSettings=GlobalSettings.app;
 });
 
-app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactory, devices, applications){
-  $scope.devices=devices;
-  $scope.applications=applications;
-  $scope.selectedDevice={};
-  $scope.existingDevice=false;
-  $scope.newDeviceModal=function(){
-    $scope.selectedDevice={};
-    $scope.existingDevice=false;
-    $scope.deviceModal();
-  };
-  $scope.deviceModal=function(){
-    $mdDialog.show({
-      templateUrl: 'modals/device.html',
-      clickOutsideToClose: true,
-      scope: $scope,
-      preserveScope: true
-    })
-    .then(function(dialogRes){
-      console.log("creating device");
-      $scope.processDevice();
-    })
-    .catch(function(e){
-      console.log("cancelling");
-    });
-  };
-  
-  $scope.selectDevice=function(device){
-    $scope.selectedDevice=angular.copy(device);
-    $scope.existingDevice=true;
-    $scope.deviceModal();
-  };
-  
-  $scope.processDevice=function(){
-    console.log($scope.selectedDevice);
-    var prom=$scope.existingDevice ?
-      DeviceFactory.modifyDevice($scope.selectedDevice.token, $scope.selectedDevice.name, $scope.selectedDevice.type) :
-      DeviceFactory.newDevice($scope.selectedDevice.name, $scope.selectedDevice.type);
-    prom
-    .then(function (res) {
-      console.log(res);
-      $mdToast.showSimple("Device created");
-      $scope.refreshDevices();
-    })
-    .catch(function (err) {
-      $mdToast.showSimple("Device creation failed");
-      console.log(err);
-    });
-  };
-  
-  $scope.cancelDialog=function(){
-    $mdDialog.cancel();
-  };
-  
-  $scope.applyDialog=function(){
-    $mdDialog.hide();
-  };
-  
-  $scope.refreshDevices=function(){
-    DeviceFactory.devices()
-    .then(function (devices) {
-      $scope.devices=devices;
-    });
-  };
-  
-  $scope.regenToken=function(){
-    
-  };
-});
-app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFactory, devices){
-  $scope.newReading={};
-  $scope.readings=[];
-  $scope.devices=devices;
-  $scope.selectedFilter={};
-  $scope.deviceTypes=_.chain(devices).pluck("type").unique().compact().value();
-  $scope.deviceNames=_.chain(devices).map(function (item) {
-    return item.name;
-  }).sortBy().unique().value();
-  console.log($scope.deviceTypes);
-  
-  $scope.refreshReadings=function(){
-    ReadingFactory.readings($scope.selectedFilter)
-    .then(function (readings) {
-      $scope.readings=readings;
-      $scope.readings=$scope.readings.map(function(item){
-        return _.merge(item, {dataStr: JSON.stringify(item.data, null, 2)});
-      });
-    });
-  };
-  
-  $scope.processReading=function(){
-    ReadingFactory.newReading($scope.newReading.token, $scope.newReading.data, $scope.newReading.type, {})
-    .then(function (response) {
-      console.log(response);
-      $mdToast.showSimple("Reading created");
-    });
-  };
-  
-  $scope.newReadingDialog=function(){
-    $mdDialog.show({
-      templateUrl: 'modals/new_reading.html',
-      clickOutsideToClose: true,
-      scope: $scope,
-      preserveScope: true
-    })
-    .then(function (response) {
-      $scope.processReading();
-    });
-  };
-  $scope.applyNewReadingDialog=function(){
-    console.log("apply clicked");
-    $mdDialog.hide();
-    console.log($scope.newReading.data);
-  };
-  
-  $scope.closeNewReadingDialog=function(){
-    $mdDialog.cancel();
-  };
+app.controller("MenuCtrl", function($scope, GlobalSettings){
+  $scope.app=GlobalSettings.app;
 });
 
 var read;
+/*
+ ██████ ██   ██  █████  ██████  ████████ ███████ 
+██      ██   ██ ██   ██ ██   ██    ██    ██      
+██      ███████ ███████ ██████     ██    ███████ 
+██      ██   ██ ██   ██ ██   ██    ██         ██ 
+ ██████ ██   ██ ██   ██ ██   ██    ██    ███████ 
+*/
 app.controller("ChartsCtrl", function($scope, WsFactory, readings){
   $scope.chart={
     data: [[1,1]],
@@ -147,13 +40,20 @@ app.controller("ChartsCtrl", function($scope, WsFactory, readings){
       return $scope.fieldStates[item];
     });
     console.log(selectedFields);
-    validData=_.chain(readings).pluck("data").compact().value().slice(-10);
-    console.log(validData);
+    console.log("readings");
+    console.log(readings);
+    var validReadings=readings;
     if($scope.selectedFilter.type){
-      validData=validData.filter(function(item){
+      console.log("filtering");
+      validReadings=validReadings.filter(function(item){
         return item.type==$scope.selectedFilter.type;
       });
+    } else {
+      console.log("not filtering");
     }
+    validData=_.chain(validReadings).pluck("data").compact().value().slice(-20);
+    console.log(validData);
+    
     
     $scope.chart.data=selectedFields.map(function(item){
       var col=[];
@@ -176,7 +76,13 @@ app.controller("ChartsCtrl", function($scope, WsFactory, readings){
     $scope.fieldsChanged();
   });
 });
-
+/*
+███    ███ ███████ ███████ ███████  █████   ██████  ███████ ███████ 
+████  ████ ██      ██      ██      ██   ██ ██       ██      ██      
+██ ████ ██ █████   ███████ ███████ ███████ ██   ███ █████   ███████ 
+██  ██  ██ ██           ██      ██ ██   ██ ██    ██ ██           ██ 
+██      ██ ███████ ███████ ███████ ██   ██  ██████  ███████ ███████ 
+*/
 app.controller("MessagesCtrl", function($scope, $mdDialog, $mdToast, MessageFactory){
   $scope.newMessage={
     payload: JSON.stringify({
@@ -192,8 +98,14 @@ app.controller("MessagesCtrl", function($scope, $mdDialog, $mdToast, MessageFact
     });
   };
 });
-
-app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, ApplicationFactory, applications){
+/*
+ █████  ██████  ██████  ██      ██  ██████  █████  ████████ ██  ██████  ███    ██ ███████ 
+██   ██ ██   ██ ██   ██ ██      ██ ██      ██   ██    ██    ██ ██    ██ ████   ██ ██      
+███████ ██████  ██████  ██      ██ ██      ███████    ██    ██ ██    ██ ██ ██  ██ ███████ 
+██   ██ ██      ██      ██      ██ ██      ██   ██    ██    ██ ██    ██ ██  ██ ██      ██ 
+██   ██ ██      ██      ███████ ██  ██████ ██   ██    ██    ██  ██████  ██   ████ ███████ 
+*/
+app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, ApplicationFactory, GlobalSettings, applications){
   $scope.applications=applications;
   $scope.existingApplication=false;
   $scope.selectedApplication={};
@@ -217,11 +129,13 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
       ApplicationFactory.modifyApplication($scope.selectedApplication)
       .then(function(response){
         $mdToast.showSimple("Application modified");
+        $scope.refreshApplications();
       });
     } else {
       ApplicationFactory.newApplication($scope.selectedApplication)
       .then(function(response){
         $mdToast.showSimple("Application created");
+        $scope.refreshApplications();
       });
     }
   };
@@ -241,5 +155,17 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
     .then(function(response){
       $scope.applications=response;
     });
+  };
+  
+  $scope.selectApplicationDialog=function(app){
+    GlobalSettings.app.appToken=$scope.selectedApplication.token;
+    GlobalSettings.app.appSecret=$scope.selectedApplication.secret;
+    GlobalSettings.app.name=$scope.selectedApplication.name;
+    $mdDialog.hide();
+    $mdToast.showSimple("Application selected");
+  };
+  
+  $scope.closeApplicationDialog=function(){
+     $mdDialog.cancel();
   };
 });

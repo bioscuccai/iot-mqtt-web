@@ -1,4 +1,5 @@
 'use strict';
+//var babelCore = require('babel-core');
 var dotenv = require('dotenv').load();
 var express = require('express');
 var mosca = require('mosca');
@@ -17,7 +18,7 @@ var utils = require('./utils');
 
 var readings = require('./routes/readings');
 var devices = require('./routes/devices');
-var api = require('./routes/api');
+var api = require('./routes/api/api');
 
 crayon.verbose=true;
 var app=express();
@@ -50,11 +51,11 @@ app.get("/", (req, res) => {
   res.redirect("/static");
 });
 app.use("/api", api);
-app.use("/readings", readings);
-app.use("/devices", devices);
+//app.use("/readings", readings);
+//app.use("/devices", devices);
 
 app.get("/readings/new", (req, res) => {
   res.json({});
 });
 
-http.listen(parseInt(process.env.PORT));
+http.listen(parseInt(process.env.PORT || process.env.HTTP_PORT || 3000));

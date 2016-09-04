@@ -7,7 +7,7 @@
     </div>
   </md-toolbar>
   <p>
-    MQTT port:
+    Internal MQTT port:
     <code>
       {{credentials.mqttPort}}
     </code>
@@ -18,5 +18,16 @@
       {{credentials.mqttWsPort}}
     </code>
   </p>
-  
+  <p>
+    App token:
+    <code>
+      {{appSettings.appToken}}
+    </code>
+  </p>
+  <p>
+    App secret:
+    <code>
+      {{appSettings.appSecret}}
+    </code>
+  </p>
 </md-content>

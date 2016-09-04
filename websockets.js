@@ -1,6 +1,7 @@
 'use strict';
 var utils = require('./utils');
 var io=new require('socket.io')();
+io.set("origins", "*:*");
 
 utils.readingWatcher.on("new_reading", data=>{
   console.log(data);

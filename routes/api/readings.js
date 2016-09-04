@@ -6,16 +6,18 @@ var websockets = require('../../websockets');
 var schema = require('../../schema');
 var utils = require('../../utils');
 var services = require('../../services');
+var auth = require('../../auth');
+
 var router=express.Router();
 
-router.get("/readings", (req, res) => {
+router.get("/", auth.authApplication, (req, res) => {
   let filter={};
   if (req.query.filterType) {
     filter={
       type: req.query.filterType
     };
   }
-  schema.Reading.find(filter).populate("device", null, filter).exec()
+  schema.Reading.find(filter).sort({createdAt: -1}).populate("device", null, filter).exec()
   .then(readingsDb=>{
     let readings=readingsDb;
     if(req.query.filterDevice){
@@ -35,9 +37,8 @@ router.get("/readings", (req, res) => {
   });
 });
 
-router.post("/readings/new", (req, res) => {
-  console.log(req.body);
-  utils.storeReading(req.body.token, JSON.parse(req.body.data), req.body.type, {})
+router.post("/new", auth.authDevice, (req, res) => {
+  utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, {})
   .then(reading => {
     res.json({status: 'ok'});
   })

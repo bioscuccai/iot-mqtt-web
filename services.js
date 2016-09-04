@@ -21,8 +21,8 @@ MongoClient.connect("mongodb://localhost:27017/test", (err, db) => {
 
 var pubsubsettings = {
   //using ascoltatore
-  type: 'mongo',        
-  url: 'mongodb://localhost:27017/mqtt',
+  //type: 'mongo',        
+  //url: 'mongodb://localhost:27017/mqtt',
   pubsubCollection: 'ascoltatori',
   mongo: {}
 };

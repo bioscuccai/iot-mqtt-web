@@ -9,7 +9,7 @@
       <label for="name">Type:</label>
       <input type="text" ng-model="selectedDevice.type"></input>
     </md-input-container>
-    <md-select ng-model="selectedDevice.appName" placeholder="Application">
+    <md-select ng-model="selectedDevice.application.name" placeholder="Application">
       <md-option ng-repeat="application in applications" ng-value="application.name">{{application.name}}</md-option>
     </md-select>
     <md-input-container>

@@ -5,11 +5,14 @@ var _ = require('lodash');
 var schema = require('../../schema');
 var utils = require('../../utils');
 var services = require('../../services');
+var auth = require('../../auth');
+
 var router=express.Router();
 
-router.post("/messages", (req, res) => {
+router.post("/messages", auth.authApplication, (req, res) => {
   console.log(req.body);
-  utils.sendMessage(JSON.parse(req.body.payload));
+  console.log("####APPMESSAGE");
+  utils.sendMessage(JSON.parse(req.body.payload), req.headers['x-iotfw-apptoken']);
   res.json("ok");
 });
 
@@ -20,14 +23,14 @@ router.get("/credentials", (req, res) => {
   });
 });
 
-router.get("/applications", (req, res) => {
+router.get("/", (req, res) => {
   schema.Application.find({})
   .then(applications=>{
     res.json(applications);
   });
 });
 
-router.post("/applications/new", (req, res) => {
+router.post("/new", (req, res) => {
   utils.registerApplication(req.body.name, req.body.description)
   .then(application=>{
     res.json(application);

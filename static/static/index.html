@@ -22,6 +22,7 @@
               </span>
             </div>
           </md-toolbar>
+          <md-subheader ng-controller="MenuCtrl">Selected app: {{app.name}}</md-subheader>
           <md-list>
             <md-list-item>
               <span ui-sref="applications" style="width: 100%">
@@ -69,6 +70,9 @@
     <script src='/static/bower/angular-highlightjs/angular-highlightjs.js'></script>
     <script src="/static/js/app.js"></script>
     <script src="/static/js/controllers.js"></script>
+    <script src="/static/js/controllers/readings.js"></script>
+    <script src="/static/js/controllers/devices.js"></script>
+    
     <script src="/static/js/services.js"></script>
   </body>
 </html>

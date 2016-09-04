@@ -1,9 +1,19 @@
 var app = angular.module('app', ['ngMaterial', 'ui.router', 'btford.socket-io', 'chart.js', 'hljs']);
 
+
+
 app.config(function(hljsServiceProvider){
   hljsServiceProvider.setOptions({
     tabReplace: '  '
   });
+});
+
+app.value('GlobalSettings',{
+  app: {
+    appToken: 'demo',
+    appSecret: 'demo',
+    name: 'N/A'
+  }
 });
 
 app.config(function($stateProvider, $urlRouterProvider) {
@@ -98,3 +108,13 @@ app.config(function($stateProvider, $urlRouterProvider) {
   });
 });
 
+app.run(function(ApplicationFactory, GlobalSettings){
+  ApplicationFactory.applications()
+  .then(applications=>{
+    var lastApp=_.last(applications);
+    GlobalSettings.app.name=lastApp.name;
+    GlobalSettings.app.appToken=lastApp.token;
+    GlobalSettings.app.appSecret=lastApp.secret;
+    
+  });
+});
