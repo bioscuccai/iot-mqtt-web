@@ -1,29 +1,26 @@
 'use strict';
 //var babelCore = require('babel-core');
-var dotenv = require('dotenv').load();
-var express = require('express');
-var mosca = require('mosca');
-var http = require('http');
-var formidable = require('formidable');
-var serveStatic=require("serve-static");
-var morgan = require('morgan');
-var cors = require('cors');
-var _ = require('lodash');
-var crayon = require('crayon');
+const dotenv = require('dotenv').load();
+const express = require('express');
+const mosca = require('mosca');
+const formidable = require('formidable');
+const serveStatic=require("serve-static");
+const morgan = require('morgan');
+const cors = require('cors');
+const _ = require('lodash');
+const crayon = require('crayon');
 
-var websockets=require('./websockets');
-var services=require('./services');
-var schemas=require('./schema');
-var utils = require('./utils');
+const websockets=require('./websockets');
+const services=require('./services');
+const schemas=require('./schema');
+const utils = require('./utils');
 
-var readings = require('./routes/readings');
-var devices = require('./routes/devices');
-var api = require('./routes/api/api');
+const api = require('./routes/api/api');
 
 crayon.verbose=true;
 var app=express();
 app.use(cors());
-var http=require("http").Server(app);
+const http=require("http").Server(app);
 websockets.setup(http);
 app.set("view engine", "jade");
 app.set("views", "./templates");
@@ -38,6 +35,7 @@ app.use((req, res, next)=>{
     next();
   });
 });
+
 app.use(serveStatic(__dirname+"/static"));
 app.use(morgan('dev', {
   skip: (req, res) => {
@@ -51,11 +49,6 @@ app.get("/", (req, res) => {
   res.redirect("/static");
 });
 app.use("/api", api);
-//app.use("/readings", readings);
-//app.use("/devices", devices);
 
-app.get("/readings/new", (req, res) => {
-  res.json({});
-});
 
 http.listen(parseInt(process.env.PORT || process.env.HTTP_PORT || 3000));

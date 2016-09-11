@@ -2,7 +2,7 @@
 var mongoose = require('mongoose');
 var bluebird = require('bluebird');
 var crayon = require('crayon');
-
+mongoose.set('debug', true);
 mongoose.Promise=bluebird;
 mongoose.connect(process.env.MONGO_ENV_URI || process.env.MONGO_URI || "mongodb://localhost:27017/test");
 
@@ -16,7 +16,7 @@ var applicationSchema=mongoose.Schema({
 
 var deviceSchema=mongoose.Schema({
   name: {type: String, index: 1, required: true},
-  type: String,
+  type: {type: String},
   token: String,
   application: {type: mongoose.Schema.Types.ObjectId, index: 1, ref: 'Application'}
 }, {timestamps: true});

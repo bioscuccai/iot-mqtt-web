@@ -6,25 +6,26 @@ var schema = require('../../schema');
 var utils = require('../../utils');
 var services = require('../../services');
 var auth = require('../../auth');
+const logger = require('../../logger');
 var router=express.Router();
 
 router.get("/", auth.authApplication, (req, res) => {
-  console.log(req.headers);
+  logger.info(req.headers);
   schema.Device.find({}).populate("application").exec()
   .then(devices => {
     res.json(devices.reverse());
   });
 });
 
-router.post("/new", auth.authApplication, (req, res) => {
-  console.log(req.body);
+router.post("/", auth.authApplication, (req, res) => {
+  logger.info(req.body);
   utils.registerDevice(req.body.name, req.body.type, req.body.applicationName)
   .then(dev=>{
     res.json({status: "ok"});
   })
   .catch(e=>{
+    logger.error(e);
     res.json({status: "error", error: e});
-    console.log(e);
   });
 });
 

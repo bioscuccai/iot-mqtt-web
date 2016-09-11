@@ -1,16 +1,16 @@
 'use strict';
-var express = require('express');
-var _ = require('lodash');
+const express = require('express');
+const _ = require('lodash');
 
-var websockets = require('../../websockets');
-var schema = require('../../schema');
-var utils = require('../../utils');
-var services = require('../../services');
-var router=express.Router();
+const websockets = require('../../websockets');
+const schema = require('../../schema');
+const utils = require('../../utils');
+const services = require('../../services');
+const router=express.Router();
 
-var applications = require('./applications');
-var devices = require('./devices');
-var readings = require('./readings');
+const applications = require('./applications');
+const devices = require('./devices');
+const readings = require('./readings');
 
 router.get("/", (req, res) => {
   res.json({});

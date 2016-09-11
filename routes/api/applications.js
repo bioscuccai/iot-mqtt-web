@@ -1,17 +1,19 @@
 'use strict';
-var express = require('express');
-var _ = require('lodash');
+const express = require('express');
+const _ = require('lodash');
 
-var schema = require('../../schema');
-var utils = require('../../utils');
-var services = require('../../services');
-var auth = require('../../auth');
+const schema = require('../../schema');
+const utils = require('../../utils');
+const services = require('../../services');
+const auth = require('../../auth');
+
+const logger=require('../../logger');
 
 var router=express.Router();
 
 router.post("/messages", auth.authApplication, (req, res) => {
-  console.log(req.body);
-  console.log("####APPMESSAGE");
+  logger.info(req.body);
+  logger.info("####APPMESSAGE");
   utils.sendMessage(JSON.parse(req.body.payload), req.headers['x-iotfw-apptoken']);
   res.json("ok");
 });

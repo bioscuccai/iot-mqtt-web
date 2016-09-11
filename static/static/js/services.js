@@ -48,7 +48,7 @@ app.factory("DeviceFactory", function($http, $q, GlobalSettings){
   function newDevice(name, type, applicationName){
     var def=$q.defer();
     console.log("new device app: "+applicationName);
-    $http.post("http://"+window.location.host+"/api/devices/new", {
+    $http.post("http://"+window.location.host+"/api/devices", {
       name: name,
       type: type,
       applicationName: applicationName
@@ -113,7 +113,7 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
   }
   
   function newReading(token, data, type, meta){
-    return $http.post("http://"+window.location.host+"/api/readings/new", {
+    return $http.post("http://"+window.location.host+"/api/readings", {
       token: token,
       data: data,
       type: type,

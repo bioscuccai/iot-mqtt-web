@@ -7,44 +7,62 @@ var schema = require('../../schema');
 var utils = require('../../utils');
 var services = require('../../services');
 var auth = require('../../auth');
+const wrap=require('co-express');
+const logger = require('../../logger');
+
 
 var router=express.Router();
 
-router.get("/", auth.authApplication, (req, res) => {
+router.get("/", auth.authApplication, wrap(function*(req, res) {
+  let limit = Math.max(0, parseInt(req.query.limit)) || 0;
+  let skip = Math.max(0, parseInt(req.query.skip)) || 0;  
+  let application = yield schema.Application
+    .findOne({
+      token: req.headers['x-iotfw-apptoken']
+    })
+    .select('')
+    .lean()
+    .exec();
   let filter={};
-  if (req.query.filterType) {
-    filter={
-      type: req.query.filterType
-    };
-  }
-  schema.Reading.find(filter).sort({createdAt: -1}).populate("device", null, filter).exec()
-  .then(readingsDb=>{
-    let readings=readingsDb;
-    if(req.query.filterDevice){
-      //TODO
-      readings=readings.filter(item=>{
-        return _.get(item, "device.name")===req.query.filterDevice;
-      });
-    } else if (req.query.filterDeviceType){
-      readings=readings.filter(item=>{
-        return _.get(item, "device.type")===req.query.filterDeviceType;
-      });
-    }
-    res.json(readings.reverse());
-    /*res.json(readings.map(item=>{
-      return _.merge({}, item, {createdAt: item._id.getTimestamp()});
-    }));*/
-  });
-});
+  
+  let deviceFilter = {
+    application: application._id
+  };
 
-router.post("/new", auth.authDevice, (req, res) => {
+  if(req.query.filterDeviceName){
+    deviceFilter.deviceName=req.query.filterDeviceName;
+  }
+  if(req.query.filterDeviceType){
+    deviceFilter.deviceType=req.query.filterDeviceType;
+  }
+
+
+  let filteredDevices = yield schema.Device.find(deviceFilter)
+    .select("")
+    .lean()
+    .exec();
+  filter.device={
+    $in: filteredDevices.map(device=>device._id.toString())
+  }
+
+  let readings=yield schema.Reading.find(filter).sort({createdAt: -1})
+    .populate("device")
+    .skip(skip)
+    .limit(limit)
+    .lean()
+    .exec();
+    res.json(readings.reverse());
+  })
+);
+
+router.post("/", auth.authDevice, (req, res) => {
   utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, {})
   .then(reading => {
     res.json({status: 'ok'});
   })
   .catch(e=>{
+    logger.error(e);
     res.json(e);
-    console.log(e);
   });
 });
 

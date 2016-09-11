@@ -1,13 +1,13 @@
 'use strict';
-var schema = require('./schema');
-var services = require('./services');
-var bluebird = require('bluebird');
-var securerandom = require('securerandom');
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-var crayon = require('crayon');
-var _ = require('lodash');
-var bluebird = require('bluebird');
+const schema = require('./schema');
+const services = require('./services');
+const bluebird = require('bluebird');
+const securerandom = require('securerandom');
+const util = require('util');
+const EventEmitter = require('events').EventEmitter;
+const crayon = require('crayon');
+const _ = require('lodash');
+const logger = require('./logger');
 
 class ReadingWatcher{
   constructor(){
@@ -54,20 +54,21 @@ function storeReading(token, data, type, meta){
       console.log(data);
       return schema.Reading.create({
         device: device._id,
+        application: device.application._id,
         data: data,
         type: type,
         loc: meta.loc || [0,0]
       });
     })
     .then(reading=>{
-      console.log(reading);
-      crayon.info("device:");
-      console.log(device);
+      logger.info(reading);
+      logger.info("device:");
+      logger.info(device);
       readingWatcher.emit("new_reading", _.merge(reading, {appToken: device.application.token})); //pass app token too
       return resolve("reading");
     })
     .catch(e=>{
-      console.log(e);
+      logger.info(e);
       return reject(e);
     });
   });
@@ -81,14 +82,14 @@ function validApplication(username, password){
     })
     .then(appDb=>{
       if(appDb){
-        crayon.info(`App authenticated: ${appDb.name}`);
+        logger.info(`App authenticated: ${appDb.name}`);
         return resolve({
           type: 'app',
           appToken: username,
           appName: appDb.name
         });
       } else {
-        crayon.error("App rejected");
+        logger.error("App rejected");
         return reject({status: "invalid app"});
       }
     });
@@ -100,17 +101,17 @@ function validDevice(username, password){
     schema.Application.findOne({token: username})
     .then(appDb=>{
       if(!appDb){
-        crayon.error("device/app rejected");
+        logger.error("device/app rejected");
         return reject({status: "invalid app"});
       }
       return schema.Device.findOne({token: password});
     })
     .then(deviceDb=>{
       if(!deviceDb){
-        crayon.error("device rejected");
+        logger.error("device rejected");
         return reject({status: "invalid device"});
       }
-      crayon.info(`Device authenticated: ${deviceDb.name}`);
+      logger.info(`Device authenticated: ${deviceDb.name}`);
       return resolve({
         type: 'device',
         deviceToken: password,
@@ -130,17 +131,17 @@ function validTokenPair(username, password){
 }
 function mqttAuthenticate(client, username, password, callback){
   if(!password || !username){
-    crayon.error("No login given");
+    logger.error("No login given");
     return callback({status: "login required"}, false);
   }
   validTokenPair(username, password.toString())
   .then(authData=>{
     client.user=authData;
-    crayon.info(`Authenticated ${client.user.appName || client.user.deviceName}`);
+    logger.info(`Authenticated ${client.user.appName || client.user.deviceName}`);
     callback(null, true);
   }).catch(authErr=>{
-    console.log(authErr);
-    crayon.error(`Rejected`);
+    logger.error(authErr);
+    logger.error(`Rejected`);
     callback(authErr, false);
   });
 }
@@ -201,41 +202,41 @@ function mqttAuthorizePublish(client, topic, payload, callback){
 }
 function mqttAuthorizeSubscribe(client, topic, callback){
   //apps can subscribe to everything
-  crayon.info(`${JSON.stringify(client.user)} subscribing to ${topic}`);
+  logger.info(`${JSON.stringify(client.user)} subscribing to ${topic}`);
   if(client.user.type==="app"){
-    crayon.info(`App ${client.user.appName} subscribed to ${topic}`);
+    logger.info(`App ${client.user.appName} subscribed to ${topic}`);
     return callback(null, true);
   }
   if(topic===`appmessage/${client.user.appToken}/global`){
-    crayon.info(`Device ${client.user.deviceName} subscribed to broadcast`);
+    logger.info(`Device ${client.user.deviceName} subscribed to broadcast`);
     return callback(null, true);
   }
   if(topic.startsWith(`appmessage/${client.user.appToken}/device_type/`)){
     let type=topic.replace(`appmessage/${client.user.appToken}/device_type/`, "");
     if(type===client.user.deviceType){
-      crayon.info(`Device ${client.user.deviceName} subscribed to type channel: ${type}`);
+      logger.info(`Device ${client.user.deviceName} subscribed to type channel: ${type}`);
       return callback(null, true);
     } else {
-      crayon.error(`Device ${client.user.deviceName} rejected from type channel: ${type}`);
+      logger.error(`Device ${client.user.deviceName} rejected from type channel: ${type}`);
       return callback({status: "rejected type"}, false);
     }
   }
   if(topic.startsWith(`appmessage/${client.user.appToken}/device/`)){
     let deviceToken=topic.replace(`appmessage/${client.user.appToken}/device/`, "");
     if(deviceToken===client.user.deviceToken){
-      crayon.info(`Device ${client.user.deviceName} subscribed to private channel`);
+      logger.info(`Device ${client.user.deviceName} subscribed to private channel`);
       return callback(null, true);
     } else {
-      crayon.error(`Device ${client.user.deviceName} rejected from private channel`);
+      logger.error(`Device ${client.user.deviceName} rejected from private channel`);
       return callback({status: "rejected private"}, false);
     }
   }
-  crayon.error("subscription rejected");
+  logger.error("subscription rejected");
   callback(null, false);
 }
 
 services.moscaServer.on('ready', ()=>{
-  console.log("ready");
+  logger.info("Mosca server ready");
   services.moscaServer.authenticate=mqttAuthenticate;
   services.moscaServer.authorizeSubscribe=mqttAuthorizeSubscribe;
   services.moscaServer.authorizePublish=mqttAuthorizePublish;
@@ -243,16 +244,16 @@ services.moscaServer.on('ready', ()=>{
 
 services.moscaServer.on("clientConnected", (client) => {
   //console.log(client);
-  console.log("connected");
+  logger.info("Mosca client connected");
 });
 
 function sendMessage(payload, appToken){
-  crayon.info("message");
-  console.log(payload);
+  logger.info("message");
+  logger.info(payload);
   let deviceFilter={};
   //targeted device => each device gets notified on its own topic
   if(payload.targetDevice){
-    crayon.info("targeting device");
+    logger.info("targeting device");
     if(payload.targetDevice){ //all devices with the given name
       deviceFilter=_.merge({}, deviceFilter, {name: payload.targetDevice});
     }
@@ -270,15 +271,15 @@ function sendMessage(payload, appToken){
     });
   //targeted device type => device type topic gets notified
   } else if(payload.targetDeviceType){
-    crayon.info("targeting device type");
+    logger.info("targeting device type");
     services.moscaServer.publish({
       topic: `appmessage/${appToken}/device_type/${payload.targetDeviceType}`,
       payload: payload.message
     });
   //broadcast
   } else{
-    crayon.info("broadcasting");
-    console.log(payload.message);
+    logger.info("broadcasting");
+    logger.info(payload.message);
     services.moscaServer.publish({
       topic: `appmessage/${appToken}/global`,
       payload: payload.message
@@ -287,14 +288,14 @@ function sendMessage(payload, appToken){
 }
 
 services.moscaServer.on("published", (packet, client) => {
-  crayon.warn("PUBLISHED MESSAGE");
-  console.log(packet);
-  console.log("topic: "+packet.topic);
+  logger.warn("PUBLISHED MESSAGE");
+  logger.info(packet);
+  logger.info("topic: "+packet.topic);
   //console.log("payload: "+packet.payload.toString());
   
   //messages from the application to the devices
   if(packet.topic==="send_message"){
-    crayon.info("NEW MESSAGE");
+    logger.info("NEW MESSAGE");
     let payload=JSON.parse(packet.payload.toString());
     sendMessage(payload, client.user.appToken);
   }
@@ -302,19 +303,19 @@ services.moscaServer.on("published", (packet, client) => {
   if(packet.topic==="send_reading"){
     try {
       let payload=JSON.parse(packet.payload.toString());
-      crayon.info("reading");
-      console.log(payload);
+      logger.info("reading");
+      logger.info(payload);
       storeReading(payload.token, payload.data, payload.type, {});
     } catch(e){
-      crayon.error(`failed to parse payload: ${packet.payload.toString()}`);
+      logger.error(`failed to parse payload: ${packet.payload.toString()}`);
     }
     
   }
 });
 
 readingWatcher.on("new_reading", reading=>{
-  crayon.info("publised app event");
-  console.log(reading);
+  logger.info("publised app event");
+  logger.info(reading);
   services.moscaServer.publish({
     topic: `appevent/${reading.appToken}`,
     payload: JSON.stringify(reading)
