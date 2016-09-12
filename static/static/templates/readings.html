@@ -14,6 +14,16 @@
     <label for="filterTypes"></label>
     <md-checkbox name="filterTypes" ng-model="typeFilter.state">Filters?</md-checkbox>
   </md-input-container>
+
+  <md-input-container>
+    <label for="limit">Limit</label>
+    <input type="text" name="limit" ng-model="page.limit">
+  </md-input-container>
+  <md-input-container>
+    <label for="skip">Skip</label>
+    <input type="text" name="limit" ng-model="page.skip">
+  </md-input-container>
+
   <md-select ng-model="selectedFilter.deviceName" placeholder="---Device---">
     <md-option ng-value="">--Device--</md-option>
     <md-option ng-repeat="deviceName in deviceNames" ng-value="deviceName">{{deviceName}}</md-option>
@@ -42,6 +52,8 @@
           {{reading.type}}
           <i class="icon ion-calendar"></i>
           {{reading.createdAt}}
+          <i class="icon ion-earth"></i>
+          <a href="http://maps.google.com?q={{reading.loc[0]}},{{reading.loc[1]}}" target="_blank">{{reading.loc[0]}} / {{reading.loc[1]}}</a>
         </small>
       </p>
       <hr>

@@ -21,5 +21,8 @@
     "angular-chart.js": "~0.8.8",
     "angular-highlightjs": "~0.5.1",
     "ionicons": "~2.0.1"
+  },
+  "resolutions": {
+    "angular": ">1.0.8"
   }
 }

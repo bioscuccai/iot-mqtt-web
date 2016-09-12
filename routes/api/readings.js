@@ -24,7 +24,7 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
     .lean()
     .exec();
   let filter={};
-  
+
   let deviceFilter = {
     application: application._id
   };
@@ -46,17 +46,23 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
   }
 
   let readings=yield schema.Reading.find(filter).sort({createdAt: -1})
-    .populate("device")
+    .populate({
+      path: 'device',
+      options: {
+        lean: 1
+      }
+    })
     .skip(skip)
     .limit(limit)
+    .sort("-createdAt")
     .lean()
     .exec();
-    res.json(readings.reverse());
+    res.json(readings);
   })
 );
 
 router.post("/", auth.authDevice, (req, res) => {
-  utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, {})
+  utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, req.body.meta)
   .then(reading => {
     res.json({status: 'ok'});
   })

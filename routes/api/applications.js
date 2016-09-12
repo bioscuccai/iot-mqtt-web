@@ -26,13 +26,13 @@ router.get("/credentials", (req, res) => {
 });
 
 router.get("/", (req, res) => {
-  schema.Application.find({})
+  schema.Application.find({}).lean().exec()
   .then(applications=>{
     res.json(applications);
   });
 });
 
-router.post("/new", (req, res) => {
+router.post("/", (req, res) => {
   utils.registerApplication(req.body.name, req.body.description)
   .then(application=>{
     res.json(application);

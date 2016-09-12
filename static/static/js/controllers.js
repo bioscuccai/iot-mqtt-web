@@ -35,7 +35,6 @@ app.controller("ChartsCtrl", function($scope, WsFactory, readings){
   $scope.labels=['', ''];
   var validData=[];
   $scope.fieldsChanged=function(){
-    //console.log($scope.fieldStates);
     var selectedFields=Object.keys($scope.fieldStates).filter(function(item){
       return $scope.fieldStates[item];
     });
@@ -76,28 +75,7 @@ app.controller("ChartsCtrl", function($scope, WsFactory, readings){
     $scope.fieldsChanged();
   });
 });
-/*
-███    ███ ███████ ███████ ███████  █████   ██████  ███████ ███████ 
-████  ████ ██      ██      ██      ██   ██ ██       ██      ██      
-██ ████ ██ █████   ███████ ███████ ███████ ██   ███ █████   ███████ 
-██  ██  ██ ██           ██      ██ ██   ██ ██    ██ ██           ██ 
-██      ██ ███████ ███████ ███████ ██   ██  ██████  ███████ ███████ 
-*/
-app.controller("MessagesCtrl", function($scope, $mdDialog, $mdToast, MessageFactory){
-  $scope.newMessage={
-    payload: JSON.stringify({
-      "targetDevice": "",
-      "targetDeviceType": "",
-      "message": "ok"
-    }, null, 2)
-  };
-  $scope.sendMessage=function(){
-    MessageFactory.newMessage($scope.newMessage.payload)
-    .then(function(res){
-      $mdToast.showSimple("Message sent");
-    });
-  };
-});
+
 /*
  █████  ██████  ██████  ██      ██  ██████  █████  ████████ ██  ██████  ███    ██ ███████ 
 ██   ██ ██   ██ ██   ██ ██      ██ ██      ██   ██    ██    ██ ██    ██ ████   ██ ██      

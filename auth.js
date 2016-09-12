@@ -1,5 +1,8 @@
-var utils = require('./utils');
-var crayon = require('crayon');
+"use strict";
+
+const utils = require('./utils');
+const crayon = require('crayon');
+const logger = require('./logger');
 
 function authDevice(req, res, next){
   console.log(req.headers);
@@ -12,7 +15,7 @@ function authDevice(req, res, next){
     next();
   })
   .catch(err=>{
-    crayon.error("Unathorized REST device");
+    logger.error("Unathorized REST device");
     res.json({status: 'error', message: 'unauthorized'});
   });
 }
@@ -28,7 +31,7 @@ function authApplication(req, res, next){
     next();
   })
   .catch(err=>{
-    crayon.error("Unathorized REST app");
+    logger.error("Unathorized REST app");
     res.json({status: 'error', message: 'unauthorized'});
   });
 }

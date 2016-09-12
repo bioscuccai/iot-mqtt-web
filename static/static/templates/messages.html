@@ -5,14 +5,22 @@
     </div>
   </md-toolbar>
   <md-input-container>
-    <label for="data">Message:</label>
-    <textarea ng-model="newMessage.payload">
-      {
-        "targetDevice": "",
-        "targetDeviceType": "",
-        "message": "ok"
-      }
-    </textarea>
+    <label for='targetDevice'>Target device</label>
+    <md-select name="targetDevice" ng-model="newMessage.targetDevice">
+        <md-option ng-value="">--- No device ---</md-option>
+        <md-option ng-repeat="device in devices" ng-value="device.name">{{device.name}} / {{device.type}}</md-option>
+      </md-select>
+  </md-input-container>
+  <md-input-container>
+    <label for='targetDeviceType'>Target device type</label>
+    <md-select name="targetDeviceType" ng-model="newMessage.targetDeviceType">
+      <md-option ng-value="">--- No device type ---</md-option>
+      <md-option ng-repeat="deviceType in deviceTypes" ng-value="deviceType">{{deviceType}}</md-option>
+    </md-select>
+  </md-input-container>
+  <md-input-container>
+    <label for="message">Message</label>
+    <textarea name="message" ng-model="newMessage.message" cols="30" rows="10"></textarea>
   </md-input-container>
   <md-button ng-click="sendMessage()">Send message</md-button>
 </md-content>

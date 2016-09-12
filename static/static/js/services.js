@@ -65,10 +65,13 @@ app.factory("DeviceFactory", function($http, $q, GlobalSettings){
     return def.promise;
   }
   
-  function regenToken(oldToken){
+  function regenToken(deviceId){
     var def=$q.defer();
-    $http.post("http://"+window.location.host+"/api/devices/regen_token", {
-      oldToken: oldToken
+    $http.get("http://"+window.location.host+"/api/devices/"+deviceId+"/regen_token", {
+      headers: {
+        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+      }
     })
     .then(function (response) {
       return def.resolve(response.data);
@@ -100,7 +103,9 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
       params: {
         filterDevice: query.deviceName,
         filterDeviceType: query.deviceType,
-        filterType: query.type
+        filterType: query.type,
+        limit: query.limit,
+        skip: query.skip
       }, headers: {
         'X-IOTFW-AppToken': GlobalSettings.app.appToken,
         'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
@@ -108,6 +113,9 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
     })
     .then(function(response){
       return def.resolve(response.data);
+    })
+    .catch(function(err){
+      return def.resolve(err);
     });
     return def.promise;
   }
@@ -141,7 +149,7 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
 app.factory("MessageFactory", function($http, $q, GlobalSettings){
   function newMessage(payload){
     return $http.post("http://"+window.location.host+"/api/applications/messages", {
-      payload: payload
+      payload: JSON.stringify(payload)
     }, {
       headers: {
       'X-IOTFW-AppToken': GlobalSettings.app.appToken,
@@ -162,7 +170,7 @@ app.factory("MessageFactory", function($http, $q, GlobalSettings){
 */
 app.factory("ApplicationFactory", function($http, $q){
   function newApplication(application){
-    return $http.post("http://"+window.location.host+"/api/applications/new",{
+    return $http.post("http://"+window.location.host+"/api/applications",{
       name: application.name,
       description: application.description
     });

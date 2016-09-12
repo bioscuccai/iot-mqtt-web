@@ -14,6 +14,14 @@
       <label for="data">Data:</label>
       <textarea ng-model="newReading.data"></textarea>
     </md-input-container>
+    <md-input-container>
+      <label for="data">Latitude:</label>
+      <input type="number" ng-model="newReading.meta.loc[0]">
+    </md-input-container>
+    <md-input-container>
+      <label for="data">Longitude:</label>
+      <input type="number" ng-model="newReading.meta.loc[1]">
+    </md-input-container>
   </md-dialog-content>
   <md-dialog-actions>
     <md-button ng-click="applyNewReadingDialog()">New reading</md-button>

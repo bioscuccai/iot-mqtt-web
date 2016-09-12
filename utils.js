@@ -61,14 +61,15 @@ function storeReading(token, data, type, meta){
       });
     })
     .then(reading=>{
+      logger.info("stored reading");
       logger.info(reading);
       logger.info("device:");
       logger.info(device);
       readingWatcher.emit("new_reading", _.merge(reading, {appToken: device.application.token})); //pass app token too
-      return resolve("reading");
+      return resolve(reading);
     })
     .catch(e=>{
-      logger.info(e);
+      logger.error(e);
       return reject(e);
     });
   });
@@ -108,7 +109,7 @@ function validDevice(username, password){
     })
     .then(deviceDb=>{
       if(!deviceDb){
-        logger.error("device rejected");
+        logger.error("Device rejected");
         return reject({status: "invalid device"});
       }
       logger.info(`Device authenticated: ${deviceDb.name}`);
@@ -145,51 +146,7 @@ function mqttAuthenticate(client, username, password, callback){
     callback(authErr, false);
   });
 }
-/*
-function mqttAuthenticate(client, username, password, callback){
-  console.log(username);
-  console.log(password.toString());
-  schema.Application.findOne({
-    token: username,
-    secret: password.toString()
-  })
-  .then(app=>{
-    crayon.info("AUTH");
-    console.log(app);
-    if(app){
-      client.user={
-        type: 'app',
-        apptoken: username
-      };
-      crayon.info(("APP authenthicated"));
-      return callback(null, true);
-    }
-    schema.Application.findOne({token: username})
-    .then(app=>{
-      if(!app){
-        crayon.error("no app found");
-        return callback("no app", false);
-      }
-      schema.Device.findOne({
-        token: password.toString(),
-        application: app
-      })
-      .then(dev=>{
-        if(!dev){
-          crayon.error("DEVICE not found");
-          return callback("no dev", false);
-        }
-        client.user={
-          type: 'device',
-          devicetoken: username
-        };
-        crayon.info("DEVICE found");
-        return callback(null, true);
-      });
-    });
-  });
-}
-*/
+
 function mqttAuthorizePublish(client, topic, payload, callback){
   if(client.user.type==="app"){
     return callback(null, true);
@@ -197,6 +154,7 @@ function mqttAuthorizePublish(client, topic, payload, callback){
   if(topic===`send_reading/${client.user.appToken}`){
     return callback(null, true);
   }
+  logger.error(`Unauthorized publish to ${topic} from ${JSON.stringify(client.user, null, 2)}`);
   callback({status: "unauthorized"}, false);
   //callback(null, true);
 }
@@ -243,7 +201,6 @@ services.moscaServer.on('ready', ()=>{
 });
 
 services.moscaServer.on("clientConnected", (client) => {
-  //console.log(client);
   logger.info("Mosca client connected");
 });
 
@@ -288,24 +245,23 @@ function sendMessage(payload, appToken){
 }
 
 services.moscaServer.on("published", (packet, client) => {
-  logger.warn("PUBLISHED MESSAGE");
   logger.info(packet);
   logger.info("topic: "+packet.topic);
   //console.log("payload: "+packet.payload.toString());
   
   //messages from the application to the devices
-  if(packet.topic==="send_message"){
+  if(packet.topic.startsWith("send_message/")){
     logger.info("NEW MESSAGE");
     let payload=JSON.parse(packet.payload.toString());
     sendMessage(payload, client.user.appToken);
   }
   
-  if(packet.topic==="send_reading"){
+  if(packet.topic.startsWith("send_reading/")){
     try {
       let payload=JSON.parse(packet.payload.toString());
       logger.info("reading");
       logger.info(payload);
-      storeReading(payload.token, payload.data, payload.type, {});
+      storeReading(client.user.deviceToken, payload.data, payload.type, {});
     } catch(e){
       logger.error(`failed to parse payload: ${packet.payload.toString()}`);
     }

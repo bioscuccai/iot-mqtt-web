@@ -67,6 +67,13 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
   };
   
   $scope.regenToken=function(){
-    
+    DeviceFactory.regenToken($scope.selectedDevice._id)
+    .then(function(updatedDevice){
+      $scope.selectedDevice=updatedDevice;
+      return DeviceFactory.devices();
+    })
+    .then(function(devices){
+      $scope.devices=devices;
+    });
   };
 });

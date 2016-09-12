@@ -1,5 +1,13 @@
 app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFactory, devices){
-  $scope.newReading={};
+  $scope.newReading={
+    meta: {
+      loc: [0,0]
+    }
+  };
+  $scope.page={
+    skip: 0,
+    limit: 100
+  };
   $scope.readings=[];
   $scope.devices=devices;
   $scope.selectedFilter={};
@@ -11,9 +19,9 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
     return item.name;
   }).sortBy().unique().value();
   console.log($scope.deviceTypes);
-  
+
   $scope.refreshReadings=function(){
-    ReadingFactory.readings($scope.typeFilter.state ? $scope.selectedFilter : {})
+    ReadingFactory.readings(_.assign({}, ($scope.typeFilter.state ? $scope.selectedFilter : {}), $scope.page))
     .then(function (readings) {
       $scope.readings=readings;
       $scope.readings=$scope.readings.map(function(item){
@@ -23,10 +31,13 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
   };
   
   $scope.processReading=function(){
-    ReadingFactory.newReading($scope.newReading.token, $scope.newReading.data, $scope.newReading.type, {})
+    ReadingFactory.newReading($scope.newReading.token, $scope.newReading.data, $scope.newReading.type, $scope.newReading.meta)
     .then(function (response) {
       console.log(response);
       $mdToast.showSimple("Reading created");
+    })
+    .catch(function(err){
+      $mdToast.showSimple("Reading creation failed!");      
     });
   };
   

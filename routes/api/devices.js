@@ -1,13 +1,14 @@
 'use strict';
-var express = require('express');
-var _ = require('lodash');
+const express = require('express');
+const _ = require('lodash');
+const securerandom = require('securerandom');
 
-var schema = require('../../schema');
-var utils = require('../../utils');
-var services = require('../../services');
-var auth = require('../../auth');
+const schema = require('../../schema');
+const utils = require('../../utils');
+const services = require('../../services');
+const auth = require('../../auth');
 const logger = require('../../logger');
-var router=express.Router();
+const router=express.Router();
 
 router.get("/", auth.authApplication, (req, res) => {
   logger.info(req.headers);
@@ -27,6 +28,32 @@ router.post("/", auth.authApplication, (req, res) => {
     logger.error(e);
     res.json({status: "error", error: e});
   });
+});
+
+router.get("/:deviceId/regen_token", auth.authApplication, (req, res) => {
+  schema.Device.findByIdAndUpdate(req.params.deviceId, {
+    token: securerandom.hex(16)
+  }, {
+    new: true
+  })
+  .then((device) => {
+    return device.populate({
+      path: 'application',
+      options: {
+        lean: true
+      }
+    }).execPopulate();
+  })
+  .then(device => {
+    res.json(device);
+  })
+  .catch(err=>{
+    logger.error(err);
+    res.json({
+      status: 'error',
+      error: err
+    });
+  })
 });
 
 module.exports = router;

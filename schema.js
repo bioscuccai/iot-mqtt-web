@@ -1,7 +1,7 @@
 'use strict';
-var mongoose = require('mongoose');
-var bluebird = require('bluebird');
-var crayon = require('crayon');
+const mongoose = require('mongoose');
+const bluebird = require('bluebird');
+const logger = require('./logger');
 mongoose.set('debug', true);
 mongoose.Promise=bluebird;
 mongoose.connect(process.env.MONGO_ENV_URI || process.env.MONGO_URI || "mongodb://localhost:27017/test");
@@ -28,7 +28,7 @@ var deviceType=mongoose.Schema({
 });
 
 var readingSchema=mongoose.Schema({
-  data: mongoose.Schema.Types.Mixed,
+  data: {type: mongoose.Schema.Types.Mixed, required: true},
   type: String,
   device: {type: mongoose.Schema.Types.ObjectId, index: 1, ref: "Device"},
   loc: [Number]
@@ -42,7 +42,7 @@ var Reading=mongoose.model("Reading", readingSchema);
 
 function defaultApp(){
   return new Promise(function(resolve, reject) {
-    console.log("starting default app");
+    logger.info("starting default app");
     Application.findOne({token: 'demo', secret: 'demo'}).exec()
     .then(appDb=>{
       if(!appDb){
@@ -53,11 +53,11 @@ function defaultApp(){
           description: 'demo'
         })
         .then(a=>{
-          crayon.info("demo app created");
+          logger.info("demo app created");
           return resolve(a);
         })
         .catch(e=>{
-          crayon.error(e);
+          logger.error(e);
           return reject(e);
         });
       } else {
@@ -70,8 +70,8 @@ function defaultApp(){
 mongoose.connection.on("connected", (ev)=>{
   defaultApp()
   .then(defApp=>{
-    console.log("default app");
-    console.log(defApp);
+    logger.info("default app");
+    logger.info(defApp);
     Device.findOne({token: 'demo_device_token'}).exec()
     .then(deviceDb=>{
       if(!deviceDb){
@@ -82,16 +82,16 @@ mongoose.connection.on("connected", (ev)=>{
           application: defApp
         })
         .then(dev=>{
-          crayon.info("demo device created");
+          logger.info("demo device created");
         })
         .catch(err=>{
-          crayon.error(err);
+          logger.error(err);
         });
       }
     });
   })
   .catch(err=>{
-    console.log(err);
+    logger.error(err);
   });
 });
 

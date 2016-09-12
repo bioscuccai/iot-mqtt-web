@@ -75,7 +75,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
         templateUrl: 'templates/charts.html',
         resolve: {
           readings: function(ReadingFactory){
-            return ReadingFactory.readings({});
+            return ReadingFactory.readings({limit: 100});
           }
         }
       }
@@ -87,7 +87,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
     views: {
       main: {
         controller: 'MessagesCtrl',
-        templateUrl: 'templates/messages.html'
+        templateUrl: 'templates/messages.html',
+        resolve: {
+          devices: function(DeviceFactory){
+            return DeviceFactory.devices();
+          }
+        }
       }
     }
   });
