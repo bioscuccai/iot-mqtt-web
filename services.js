@@ -1,11 +1,10 @@
 'use strict';
-var mongodb = require('mongodb');
-var assert = require('assert');
-var mosca = require('mosca');
-var crayon = require('crayon');
-var _ = require('lodash');
-var schemas = require('./schema');
-var utils = require('./utils');
+const mongodb = require('mongodb');
+const assert = require('assert');
+const mosca = require('mosca');
+const _ = require('lodash');
+const schemas = require('./schema');
+const utils = require('./utils');
 /*
 var MongoClient=mongodb.MongoClient;
 

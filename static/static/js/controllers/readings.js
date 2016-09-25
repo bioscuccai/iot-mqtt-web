@@ -5,31 +5,40 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
     }
   };
   $scope.page={
-    skip: 0,
-    limit: 100
+    page: 0,
+    total: 0,
+    perPage: "25",
+    pageCount: 0
   };
+
+  $scope.total=0;
   $scope.readings=[];
   $scope.devices=devices;
   $scope.selectedFilter={};
   $scope.typeFilter={
     state: false
   };
-  $scope.deviceTypes=_.chain(devices).pluck("type").unique().compact().value();
-  $scope.deviceNames=_.chain(devices).map(function (item) {
+  $scope.deviceTypes=_(devices).map("type").uniq().compact().value();
+  $scope.deviceNames=_(devices).map(function (item) {
     return item.name;
-  }).sortBy().unique().value();
-  console.log($scope.deviceTypes);
+  }).sortBy().uniq().value();
 
   $scope.refreshReadings=function(){
-    ReadingFactory.readings(_.assign({}, ($scope.typeFilter.state ? $scope.selectedFilter : {}), $scope.page))
+    var page={
+      limit: $scope.page.perPage,
+      skip: $scope.page.page*$scope.page.perPage
+    };
+    ReadingFactory.readings(_.assign({}, ($scope.typeFilter.state ? $scope.selectedFilter : {}), page))
     .then(function (readings) {
-      $scope.readings=readings;
+      $scope.readings=readings.readings;
+      $scope.page.total=readings.total;
+      $scope.page.pageCount=Math.floor(readings.total / parseInt($scope.page.perPage));
       $scope.readings=$scope.readings.map(function(item){
         return _.merge(item, {dataStr: JSON.stringify(item.data, null, 2)});
       });
     });
   };
-  
+
   $scope.processReading=function(){
     ReadingFactory.newReading($scope.newReading.token, $scope.newReading.data, $scope.newReading.type, $scope.newReading.meta)
     .then(function (response) {
@@ -61,4 +70,22 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
   $scope.closeNewReadingDialog=function(){
     $mdDialog.cancel();
   };
+
+  $scope.nextPage=function(){
+    var prevIndex=$scope.page.page;    
+    $scope.page.page=_.clamp($scope.page.page+1, 0, Math.floor($scope.page.total/$scope.page.perPage));
+    if(prevIndex===$scope.page.page){
+      return;
+    }
+    $scope.refreshReadings();
+  };
+
+  $scope.prevPage=function(){
+    var prevIndex=$scope.page.page;
+    $scope.page.page=_.clamp($scope.page.page-1, 0, Math.floor($scope.page.total/$scope.page.perPage));
+    if(prevIndex===$scope.page.page){
+      return;
+    }
+    $scope.refreshReadings();
+  }
 });

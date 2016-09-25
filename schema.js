@@ -70,7 +70,7 @@ function defaultApp(){
 mongoose.connection.on("connected", (ev)=>{
   defaultApp()
   .then(defApp=>{
-    logger.info("default app");
+    logger.info("Default app has been created");
     logger.info(defApp);
     Device.findOne({token: 'demo_device_token'}).exec()
     .then(deviceDb=>{
@@ -85,13 +85,15 @@ mongoose.connection.on("connected", (ev)=>{
           logger.info("demo device created");
         })
         .catch(err=>{
-          logger.error(err);
+          logger.warn("No demo device created");
+          logger.warn(err);
         });
       }
     });
   })
   .catch(err=>{
-    logger.error(err);
+    logger.warn("No demo app created");
+    logger.warn(err);
   });
 });
 

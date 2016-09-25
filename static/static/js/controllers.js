@@ -7,7 +7,6 @@ app.controller("MenuCtrl", function($scope, GlobalSettings){
   $scope.app=GlobalSettings.app;
 });
 
-var read;
 /*
  ██████ ██   ██  █████  ██████  ████████ ███████ 
 ██      ██   ██ ██   ██ ██   ██    ██    ██      
@@ -24,10 +23,10 @@ app.controller("ChartsCtrl", function($scope, WsFactory, readings){
   $scope.selectedFilter={
     type: ""
   };
-  read=readings;
-  $scope.fields=_.chain(readings).pluck("data").compact().map(function(e){
+  var readings=readings.readings;
+  $scope.fields=_(readings).map("data").compact().map(function(e){
     return Object.keys(e);
-  }).flatten().unique().value();
+  }).flatten().uniq().value();
   console.log($scope.fields);
   $scope.fieldStates={};
   $scope.data=[[1,1]];
@@ -50,7 +49,7 @@ app.controller("ChartsCtrl", function($scope, WsFactory, readings){
     } else {
       console.log("not filtering");
     }
-    validData=_.chain(validReadings).pluck("data").compact().value().slice(-20);
+    validData=_(validReadings).map("data").compact().value().slice(-20);
     console.log(validData);
     
     

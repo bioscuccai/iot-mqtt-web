@@ -49,7 +49,7 @@ function storeReading(token, data, type, meta){
     .then(deviceDb=>{
       device=deviceDb;
       if(!device){
-        throw("invalid token");
+        throw(new Error("invalid token"));
       }
       console.log(data);
       return schema.Reading.create({
@@ -57,7 +57,7 @@ function storeReading(token, data, type, meta){
         application: device.application._id,
         data: data,
         type: type,
-        loc: meta.loc || [0,0]
+        loc: [_.get(meta, "loc[0]", 0), _.get(meta, "loc[1]", 0)]
       });
     })
     .then(reading=>{
@@ -261,7 +261,7 @@ services.moscaServer.on("published", (packet, client) => {
       let payload=JSON.parse(packet.payload.toString());
       logger.info("reading");
       logger.info(payload);
-      storeReading(client.user.deviceToken, payload.data, payload.type, {});
+      storeReading(client.user.deviceToken, payload.data, payload.type, payload.meta);
     } catch(e){
       logger.error(`failed to parse payload: ${packet.payload.toString()}`);
     }

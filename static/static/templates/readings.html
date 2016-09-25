@@ -14,15 +14,24 @@
     <label for="filterTypes"></label>
     <md-checkbox name="filterTypes" ng-model="typeFilter.state">Filters?</md-checkbox>
   </md-input-container>
-
-  <md-input-container>
-    <label for="limit">Limit</label>
-    <input type="text" name="limit" ng-model="page.limit">
-  </md-input-container>
-  <md-input-container>
-    <label for="skip">Skip</label>
-    <input type="text" name="limit" ng-model="page.skip">
-  </md-input-container>
+  <div>
+    <md-button ng-click="prevPage()">
+      <i class="icon ion-arrow-left-a"></i>
+    </md-button>
+    Page:
+    <input type="text" ng-model="page.page" ng-change="refreshReadings()">
+    / {{page.pageCount}}
+    <select name="perPage" id="perPage" ng-model="page.perPage" ng-change="refreshReadings()">
+      <option value="5">5</option>
+      <option value="25">25</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+    per page
+    <md-button ng-click="nextPage()">
+      <i class="icon ion-arrow-right-a"></i>
+    </md-button>
+  </div>
 
   <md-select ng-model="selectedFilter.deviceName" placeholder="---Device---">
     <md-option ng-value="">--Device--</md-option>
@@ -32,10 +41,11 @@
     <md-option ng-value="">--Device type--</md-option>
     <md-option ng-repeat="deviceType in deviceTypes" ng-value="deviceType">{{deviceType}}</md-option>
   </md-select>
+  <!--
   <md-input-container>
     <label for="readingType">Reading type</label>
     <input type="text" name="readingType" ng-model="selectedFilter.type">
-  </md-input-container>
+  </md-input-container>-->
     <div ng-repeat="reading in readings | orderBy: '-_id'" ng-click="selectReading(reading)">
       <div hljs hljs-source="reading.dataStr"></div>
       <p style="margin: 0px">

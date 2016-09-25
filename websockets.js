@@ -1,6 +1,6 @@
 'use strict';
-var utils = require('./utils');
-var io=new require('socket.io')();
+const utils = require('./utils');
+const io=new require('socket.io')();
 const logger = require('./logger');
 io.set("origins", "*:*");
 

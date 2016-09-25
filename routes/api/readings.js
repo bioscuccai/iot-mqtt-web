@@ -1,12 +1,12 @@
 'use strict';
-var express = require('express');
-var _ = require('lodash');
+const express = require('express');
+const _ = require('lodash');
 
-var websockets = require('../../websockets');
-var schema = require('../../schema');
-var utils = require('../../utils');
-var services = require('../../services');
-var auth = require('../../auth');
+const websockets = require('../../websockets');
+const schema = require('../../schema');
+const utils = require('../../utils');
+const services = require('../../services');
+const auth = require('../../auth');
 const wrap=require('co-express');
 const logger = require('../../logger');
 
@@ -38,13 +38,13 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
 
 
   let filteredDevices = yield schema.Device.find(deviceFilter)
-    .select("")
     .lean()
     .exec();
   filter.device={
     $in: filteredDevices.map(device=>device._id.toString())
   }
 
+  let total = yield schema.Reading.count(filter);
   let readings=yield schema.Reading.find(filter).sort({createdAt: -1})
     .populate({
       path: 'device',
@@ -57,7 +57,10 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
     .sort("-createdAt")
     .lean()
     .exec();
-    res.json(readings);
+  res.json({
+    total,
+    readings
+  });
   })
 );
 

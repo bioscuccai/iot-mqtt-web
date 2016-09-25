@@ -1,5 +1,4 @@
 'use strict';
-//var babelCore = require('babel-core');
 const dotenv = require('dotenv').load();
 const express = require('express');
 const mosca = require('mosca');
@@ -8,7 +7,6 @@ const serveStatic=require("serve-static");
 const morgan = require('morgan');
 const cors = require('cors');
 const _ = require('lodash');
-const crayon = require('crayon');
 
 const websockets=require('./websockets');
 const services=require('./services');
@@ -17,7 +15,6 @@ const utils = require('./utils');
 
 const api = require('./routes/api/api');
 
-crayon.verbose=true;
 var app=express();
 app.use(cors());
 const http=require("http").Server(app);

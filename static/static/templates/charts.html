@@ -4,10 +4,11 @@
       <h2>Charts</h2>
     </div>
   </md-toolbar>
+  <!--
   <md-input-container>
     <label for="readingType">Reading type</label>
     <input type="text" name="readingType" ng-model="selectedFilter.type" ng-change="fieldsChanged()">
-  </md-input-container>
+  </md-input-container>-->
   <div layout="row" layout-wrap  md-scroll-y flex>
     <md-checkbox layout="row" name="selectedField" ng-model="fieldStates[field]" ng-repeat="field in fields" ng-change="fieldsChanged()">{{field}}</md-checkbox>
     

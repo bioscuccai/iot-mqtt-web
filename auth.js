@@ -1,7 +1,6 @@
 "use strict";
 
 const utils = require('./utils');
-const crayon = require('crayon');
 const logger = require('./logger');
 
 function authDevice(req, res, next){
