@@ -88,9 +88,10 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
   $scope.selectedApplication={};
   
   $scope.newApplicationDialog=function(){
+    console.log('new app dialog');
     $scope.existingApplication=false;
     $scope.selectedApplication={};
-    $scope.applicationDialog();
+    $scope.openNewApplicationDialog();
   };
   $scope.applicationDialog=function(){
     $mdDialog.show({
@@ -100,6 +101,16 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
       preserveScope: true
     });
   };
+
+  $scope.openNewApplicationDialog=function(){
+    $mdDialog.show({
+      templateUrl: 'modals/applications/new.html',
+      clickOutsideToClose: true,
+      scope: $scope,
+      preserveScope: true
+    });
+  };
+
   $scope.applyApplicationDialog=function(){
     $mdDialog.hide();
     if($scope.existingApplication){

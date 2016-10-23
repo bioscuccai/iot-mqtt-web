@@ -33,69 +33,12 @@ var readingSchema=mongoose.Schema({
   device: {type: mongoose.Schema.Types.ObjectId, index: 1, ref: "Device"},
   loc: [Number]
 }, {timestamps: true});
-readingSchema.index({loc: "2d"});
+readingSchema.index({loc: "2dsphere"});
 
 
 var Application=mongoose.model("Application", applicationSchema);
 var Device=mongoose.model("Device", deviceSchema);
 var Reading=mongoose.model("Reading", readingSchema);
-
-function defaultApp(){
-  return new Promise(function(resolve, reject) {
-    logger.info("starting default app");
-    Application.findOne({token: 'demo', secret: 'demo'}).exec()
-    .then(appDb=>{
-      if(!appDb){
-        Application.create({
-          name: 'demo',
-          token: 'demo',
-          secret: 'demo',
-          description: 'demo'
-        })
-        .then(a=>{
-          logger.info("demo app created");
-          return resolve(a);
-        })
-        .catch(e=>{
-          logger.error(e);
-          return reject(e);
-        });
-      } else {
-        return resolve(appDb);
-      }
-    });
-  });
-}
-
-mongoose.connection.on("connected", (ev)=>{
-  defaultApp()
-  .then(defApp=>{
-    logger.info("Default app has been created");
-    logger.info(defApp);
-    Device.findOne({token: 'demo_device_token'}).exec()
-    .then(deviceDb=>{
-      if(!deviceDb){
-        Device.create({
-          name: 'demo_device',
-          token: 'demo_device_token',
-          type: 'demo_device_type',
-          application: defApp
-        })
-        .then(dev=>{
-          logger.info("demo device created");
-        })
-        .catch(err=>{
-          logger.warn("No demo device created");
-          logger.warn(err);
-        });
-      }
-    });
-  })
-  .catch(err=>{
-    logger.warn("No demo app created");
-    logger.warn(err);
-  });
-});
 
 module.exports = {
   Device,

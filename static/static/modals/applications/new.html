@@ -1,0 +1,16 @@
+<md-dialog flex="50">
+  <md-dialog-content>
+    <md-input-container>
+      <label for="name">Name:</label>
+      <input type="text" name="name" ng-model="selectedApplication.name"></input>
+    </md-input-container>
+    <md-input-container>
+      <label for="data">Description:</label>
+      <textarea ng-model="selectedApplication.description" name="description"></textarea>
+    </md-input-container>
+  </md-dialog-content>
+  <md-dialog-actions>
+    <md-button ng-click="applyApplicationDialog()">New application</md-button>
+    <md-button ng-click="closeApplicationDialog()">Cancel</md-button>
+  </md-dialog-actions>
+</md-dialog>

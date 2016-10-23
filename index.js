@@ -7,11 +7,13 @@ const serveStatic=require("serve-static");
 const morgan = require('morgan');
 const cors = require('cors');
 const _ = require('lodash');
+const mongoose = require('mongoose');
 
 const websockets=require('./websockets');
 const services=require('./services');
 const schemas=require('./schema');
 const utils = require('./utils');
+const demo = require('./lib/demo');
 
 const api = require('./routes/api/api');
 
@@ -47,5 +49,6 @@ app.get("/", (req, res) => {
 });
 app.use("/api", api);
 
+mongoose.connection.on('connected', demo.demoApp);
 
 http.listen(parseInt(process.env.PORT || process.env.HTTP_PORT || 3000));

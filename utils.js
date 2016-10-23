@@ -278,7 +278,9 @@ readingWatcher.on("new_reading", reading=>{
   });
 });
 
+function createDemo () {
 
+}
 
 module.exports = {
   storeReading,

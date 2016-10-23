@@ -1,7 +1,5 @@
 var app = angular.module('app', ['ngMaterial', 'ui.router', 'btford.socket-io', 'chart.js', 'hljs']);
 
-
-
 app.config(function(hljsServiceProvider){
   hljsServiceProvider.setOptions({
     tabReplace: '  '
