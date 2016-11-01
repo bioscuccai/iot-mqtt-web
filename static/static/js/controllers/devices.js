@@ -4,51 +4,60 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
   $scope.selectedDevice={
     application: {}
   };
-  $scope.existingDevice=false;
-  $scope.newDeviceModal=function(){
-    $scope.selectedDevice={
-      application: {}
-    };
-    $scope.existingDevice=false;
-    $scope.deviceModal();
-  };
-  $scope.deviceModal=function(){
+
+  $scope.openEditDeviceModal = function () {
     $mdDialog.show({
-      templateUrl: 'modals/device.html',
+      templateUrl: 'modals/devices/edit.html',
       clickOutsideToClose: true,
       scope: $scope,
       preserveScope: true
-    })
-    .then(function(dialogRes){
-      console.log("creating device");
-      $scope.processDevice();
-    })
-    .catch(function(e){
-      console.log("cancelling");
     });
   };
-  
+
+  $scope.saveDevice = function () {
+    DeviceFactory
+      .saveDevice($scope.selectedDevice)
+      .then(function (res) {
+        $mdDialog.hide();
+        console.log(res);
+        $mdToast.showSimple("Device modified");
+        $scope.refreshDevices();
+      })
+      .catch(function (err) {
+        $mdToast.showSimple("Device modification failed");
+        console.log(err);
+      });
+  };
+
+  $scope.openNewDeviceModal = function () {
+    $scope.selectedDevice={
+      application: {}
+    };
+    $mdDialog.show({
+      templateUrl: 'modals/devices/new.html',
+      clickOutsideToClose: true,
+      scope: $scope,
+      preserveScope: true
+    });
+  };
+
+  $scope.createDevice = function () {
+    DeviceFactory
+      .newDevice($scope.selectedDevice)
+      .then(function (res) {
+        $mdToast.showSimple("Device created");
+        $scope.refreshDevices();
+      })
+      .catch(function (err) {
+        $mdToast.showSimple("Device creation failed");
+        console.log(err);
+      });
+  };
+
   $scope.selectDevice=function(device){
     $scope.selectedDevice=angular.copy(device);
     $scope.existingDevice=true;
-    $scope.deviceModal();
-  };
-  
-  $scope.processDevice=function(){
-    console.log($scope.selectedDevice);
-    var prom=$scope.existingDevice ?
-      DeviceFactory.modifyDevice($scope.selectedDevice.token, $scope.selectedDevice.name, $scope.selectedDevice.type) :
-      DeviceFactory.newDevice($scope.selectedDevice.name, $scope.selectedDevice.type, $scope.selectedDevice.application.name);
-    prom
-    .then(function (res) {
-      console.log(res);
-      $mdToast.showSimple("Device created");
-      $scope.refreshDevices();
-    })
-    .catch(function (err) {
-      $mdToast.showSimple("Device creation failed");
-      console.log(err);
-    });
+    $scope.openEditDeviceModal();
   };
   
   $scope.cancelDialog=function(){

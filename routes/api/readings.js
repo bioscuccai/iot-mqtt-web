@@ -75,4 +75,36 @@ router.post("/", auth.authDevice, (req, res) => {
   });
 });
 
+router.post("/:readingId", (req, res) => {
+  schema.Reading.findByIdAndUpdate(req.params.readingId, {
+    data: req.body.data,
+    type: req.body.type
+  })
+  .then(upd => {
+    return res.json({
+      status: 'ok'
+    });
+  })
+  .catch(error => {
+    return res.json({
+      status: 'error',
+      error
+    });
+  });
+});
+
+router.delete("/:readingId", (req, res) => {
+  schema.Reading.findByIdAndRemove(req.params.readingId)
+  .then(del => {
+    return res.json({
+      status: "ok"
+    })
+  })
+  .catch(error => {
+    return res.json({
+      status: "error",
+      error
+    });
+  });
+});
 module.exports = router;

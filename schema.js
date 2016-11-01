@@ -21,6 +21,8 @@ var deviceSchema=mongoose.Schema({
   application: {type: mongoose.Schema.Types.ObjectId, index: 1, ref: 'Application'}
 }, {timestamps: true});
 deviceSchema.index({name: 1, type: 1}, {unique: true});
+deviceSchema.index({token: 1}, {unique: true});
+deviceSchema.index({application: 1});
 
 var deviceType=mongoose.Schema({
   name: String,

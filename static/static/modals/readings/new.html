@@ -1,0 +1,30 @@
+<md-dialog flex="50">
+  <md-dialog-content>
+    <md-input-container>
+      <label for="token">Device:</label>
+      <md-select name="token" ng-model="newReading.token">
+        <md-option ng-repeat="device in devices" ng-value="device.token">{{device.name}} / {{device.type}}</md-option>
+      </md-select>
+    </md-input-container>
+    <md-input-container>
+      <label for="type">Type:</label>
+      <input type="text" ng-model="newReading.type"></input>
+    </md-input-container>
+    <md-input-container>
+      <label for="data">Data:</label>
+      <textarea ng-model="newReading.data"></textarea>
+    </md-input-container>
+    <md-input-container>
+      <label for="data">Latitude:</label>
+      <input type="number" ng-model="newReading.meta.loc[0]">
+    </md-input-container>
+    <md-input-container>
+      <label for="data">Longitude:</label>
+      <input type="number" ng-model="newReading.meta.loc[1]">
+    </md-input-container>
+  </md-dialog-content>
+  <md-dialog-actions>
+    <md-button ng-click="applyNewReadingDialog()">New reading</md-button>
+    <md-button ng-click="closeNewReadingDialog()">Cancel</md-button>
+  </md-dialog-actions>
+</md-dialog>

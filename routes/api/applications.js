@@ -38,4 +38,33 @@ router.post("/", (req, res) => {
     res.json(application);
   });
 });
+
+router.post('/:appId', (req, res) => {
+  schema.Application.findByIdAndUpdate(req.params.appId, {
+    name: req.body.name,
+    description: req.body.description
+  })
+  .then(upd => {
+    return res.json({
+      status: 'ok'
+    });
+  });
+});
+
+router.delete("/:appId", (req, res) => {
+  schema.Application.findByIdAndRemove(req.params.appId)
+  .then(del => {
+    return res.json({
+      status: "ok"
+    })
+  })
+  .catch(error => {
+    return res.json({
+      status: "error",
+      error
+    });
+  });
+});
+
+
 module.exports = router;

@@ -8,6 +8,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const _ = require('lodash');
 const mongoose = require('mongoose');
+const methodOverride = require('method-override');
 
 const websockets=require('./websockets');
 const services=require('./services');
@@ -20,6 +21,7 @@ const api = require('./routes/api/api');
 var app=express();
 app.use(cors());
 const http=require("http").Server(app);
+app.use(methodOverride('_method'));
 websockets.setup(http);
 app.set("view engine", "jade");
 app.set("views", "./templates");

@@ -56,4 +56,38 @@ router.get("/:deviceId/regen_token", auth.authApplication, (req, res) => {
   })
 });
 
+router.post("/:deviceId", (req, res) => {
+  schema.Device.findByIdAndUpdate(req.params.deviceId, {
+    token: req.body.token,
+    type: req.body.type,
+    name: req.body.name
+  })
+  .then(upd => {
+    res.json({
+      status: 'ok'
+    })
+  })
+  .catch(error => {
+    res.json({
+      status: "error",
+      error
+    })
+  });
+});
+
+router.delete("/:deviceId", (req, res) => {
+  schema.Device.findByIdAndRemove(req.params.appId)
+  .then(del => {
+    return res.json({
+      status: "ok"
+    })
+  })
+  .catch(error => {
+    return res.json({
+      status: "error",
+      error
+    });
+  });
+});
+
 module.exports = router;
