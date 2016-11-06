@@ -85,4 +85,17 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
       $scope.devices=devices;
     });
   };
+  
+  $scope.deleteDialog = function () {
+  			DeviceFactory.deleteDevice($scope.selectedDevice)
+  			.then(function (res) {
+  					$mdDialog.hide();
+  					$mdToast.showSimple('Device has been deleted');
+  			})
+  			.catch(function (err) {
+  					$mdDialog.hide();
+  					console.log(err);
+  					$mdToast.showSimple('Device has not been deleted!');
+  			});
+  };
 });

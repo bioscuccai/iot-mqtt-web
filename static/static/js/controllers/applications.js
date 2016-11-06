@@ -75,4 +75,17 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
   $scope.closeApplicationDialog=function(){
      $mdDialog.cancel();
   };
+  
+  $scope.deleteDialog = function () {
+  		ApplicationFactory.deleteApplication($scope.selectedApplication)
+  		.then(function () {
+  				$mdDialog.hide();
+  				$mdToast.showSimple('Application has been deleted!');
+  		})
+  		.catch(function (error) {
+  				$mdDialog.hide();
+					console.log(err);
+ 					$mdToast.showSimple('Application has not been deleted!');
+  		});
+  };
 });

@@ -88,4 +88,17 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
     }
     $scope.refreshReadings();
   }
+  
+  $scope.deleteDialog = function () {
+  			ReadingFactory.deleteReading($scope.selectedReading)
+  			.then(function () {
+  					$mdDialog.hide();
+  					$mdToast.showSimple('Application has been deleted');
+  			})
+  			.catch(function (err) {
+  					$mdDialog.hide();
+  					console.log(err);
+  					$mdToast.showSimple('Application has not been deleted!');
+  			});
+  };
 });
