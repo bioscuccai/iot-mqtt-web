@@ -7,6 +7,7 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
         filterDevice: query.deviceName,
         filterDeviceType: query.deviceType,
         filterType: query.type,
+        filterApplication: query.application,
         limit: query.limit,
         skip: query.skip
       }, headers: {

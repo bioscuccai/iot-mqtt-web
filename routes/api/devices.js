@@ -58,7 +58,6 @@ router.get("/:deviceId/regen_token", auth.authApplication, (req, res) => {
 
 router.post("/:deviceId", (req, res) => {
   schema.Device.findByIdAndUpdate(req.params.deviceId, {
-    token: req.body.token,
     type: req.body.type,
     name: req.body.name
   })
@@ -76,7 +75,7 @@ router.post("/:deviceId", (req, res) => {
 });
 
 router.delete("/:deviceId", (req, res) => {
-  schema.Device.findByIdAndRemove(req.params.appId)
+  schema.Device.findByIdAndRemove(req.params.deviceId)
   .then(del => {
     return res.json({
       status: "ok"

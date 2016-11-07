@@ -80,7 +80,8 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
   		ApplicationFactory.deleteApplication($scope.selectedApplication)
   		.then(function () {
   				$mdDialog.hide();
-  				$mdToast.showSimple('Application has been deleted!');
+  				$mdToast.showSimple('Application has been deleted');
+          $scope.refreshApplications();
   		})
   		.catch(function (error) {
   				$mdDialog.hide();

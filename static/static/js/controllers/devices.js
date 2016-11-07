@@ -79,6 +79,8 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
     DeviceFactory.regenToken($scope.selectedDevice._id)
     .then(function(updatedDevice){
       $scope.selectedDevice=updatedDevice;
+      $mdDialog.hide();
+      $mdToast.showSimple('Token regenerated');
       return DeviceFactory.devices();
     })
     .then(function(devices){
@@ -87,15 +89,16 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
   };
   
   $scope.deleteDialog = function () {
-  			DeviceFactory.deleteDevice($scope.selectedDevice)
-  			.then(function (res) {
-  					$mdDialog.hide();
-  					$mdToast.showSimple('Device has been deleted');
-  			})
-  			.catch(function (err) {
-  					$mdDialog.hide();
-  					console.log(err);
-  					$mdToast.showSimple('Device has not been deleted!');
-  			});
+    DeviceFactory.deleteDevice($scope.selectedDevice)
+    .then(function (res) {
+        $mdDialog.hide();
+        $mdToast.showSimple('Device has been deleted');
+        $scope.refreshDevices();
+    })
+    .catch(function (err) {
+        $mdDialog.hide();
+        console.log(err);
+        $mdToast.showSimple('Device has not been deleted!');
+    });
   };
 });

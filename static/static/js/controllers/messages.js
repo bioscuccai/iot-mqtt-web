@@ -1,10 +1,3 @@
-/*
-███    ███ ███████ ███████ ███████  █████   ██████  ███████ ███████ 
-████  ████ ██      ██      ██      ██   ██ ██       ██      ██      
-██ ████ ██ █████   ███████ ███████ ███████ ██   ███ █████   ███████ 
-██  ██  ██ ██           ██      ██ ██   ██ ██    ██ ██           ██ 
-██      ██ ███████ ███████ ███████ ██   ██  ██████  ███████ ███████ 
-*/
 app.controller("MessagesCtrl", function($scope, $mdDialog, $mdToast, MessageFactory, devices){
   $scope.devices=devices;
   $scope.newMessage={

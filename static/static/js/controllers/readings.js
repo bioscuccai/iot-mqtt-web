@@ -1,4 +1,4 @@
-app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFactory, devices){
+app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFactory, ApplicationFactory, devices, applications){
   $scope.newReading={
     meta: {
       loc: [0,0]
@@ -14,6 +14,7 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
   $scope.total=0;
   $scope.readings=[];
   $scope.devices=devices;
+  $scope.applications = applications;
   $scope.selectedFilter={};
   $scope.typeFilter={
     state: false

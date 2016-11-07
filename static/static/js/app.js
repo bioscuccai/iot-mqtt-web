@@ -57,8 +57,11 @@ app.config(function($stateProvider, $urlRouterProvider) {
         controller: 'ReadingsCtrl',
         templateUrl: 'templates/readings.html',
         resolve: {
-            devices: function(DeviceFactory){
-              return DeviceFactory.devices();
+          devices: function(DeviceFactory){
+            return DeviceFactory.devices();
+          },
+          applications: function(ApplicationFactory){
+            return ApplicationFactory.applications();
           }
         }
       }

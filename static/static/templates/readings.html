@@ -41,6 +41,10 @@
     <md-option ng-value="">--Device type--</md-option>
     <md-option ng-repeat="deviceType in deviceTypes" ng-value="deviceType">{{deviceType}}</md-option>
   </md-select>
+  <md-select ng-model="selectedFilter.application" placeholder="---Application---">
+    <md-option ng-value="">--Application--</md-option>
+    <md-option ng-repeat="application in applications" ng-value="application._id">{{application.name}}</md-option>
+  </md-select>
   <!--
   <md-input-container>
     <label for="readingType">Reading type</label>

@@ -40,8 +40,10 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
   let filteredDevices = yield schema.Device.find(deviceFilter)
     .lean()
     .exec();
-  filter.device={
-    $in: filteredDevices.map(device=>device._id.toString())
+  if (req.query.filterApplication) {
+    filter.device={
+      $in: filteredDevices.map(device=>device._id.toString())
+    }
   }
 
   let total = yield schema.Reading.count(filter);
