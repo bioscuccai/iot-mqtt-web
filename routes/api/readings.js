@@ -1,26 +1,28 @@
 'use strict';
 const express = require('express');
 const _ = require('lodash');
+const wrap = require('co-express');
 
 const websockets = require('../../websockets');
 const schema = require('../../schema');
 const utils = require('../../utils');
 const services = require('../../services');
 const auth = require('../../auth');
-const wrap=require('co-express');
 const logger = require('../../logger');
 
 
 var router=express.Router();
 
 router.get("/", auth.authApplication, wrap(function*(req, res) {
-  let limit = Math.max(0, parseInt(req.query.limit)) || 0;
+  let limit = Math.max(0, parseInt(req.query.limit)) || 100;
   let skip = Math.max(0, parseInt(req.query.skip)) || 0;  
   let application = yield schema.Application
     .findOne({
       token: req.headers['x-iotfw-apptoken']
     })
     .select('')
+    .limit(limit)
+    .skip(skip)
     .lean()
     .exec();
   let filter={};
@@ -43,7 +45,7 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
   if (req.query.filterApplication) {
     filter.device={
       $in: filteredDevices.map(device=>device._id.toString())
-    }
+    };
   }
 
   let total = yield schema.Reading.count(filter);
@@ -66,47 +68,28 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
   })
 );
 
-router.post("/", auth.authDevice, (req, res) => {
-  utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, req.body.meta)
-  .then(reading => {
-    res.json({status: 'ok'});
-  })
-  .catch(e=>{
-    logger.error(e);
-    res.json(e);
-  });
-});
+router.post("/", auth.authDevice, wrap(function*(req, res) {
+  let reading = yield utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, req.body.meta);
+  res.json(reading);
+}));
 
-router.post("/:readingId", (req, res) => {
-  schema.Reading.findByIdAndUpdate(req.params.readingId, {
+router.post("/:readingId", wrap(function* (req, res) {
+  let reading = schema.Reading.findByIdAndUpdate(req.params.readingId, {
     data: req.body.data,
     type: req.body.type
-  })
-  .then(upd => {
-    return res.json({
-      status: 'ok'
-    });
-  })
-  .catch(error => {
-    return res.json({
-      status: 'error',
-      error
-    });
+  }, {
+    new: true,
+    lean: true
   });
-});
 
-router.delete("/:readingId", (req, res) => {
-  schema.Reading.findByIdAndRemove(req.params.readingId)
-  .then(del => {
-    return res.json({
-      status: "ok"
-    })
-  })
-  .catch(error => {
-    return res.json({
-      status: "error",
-      error
-    });
+  res.json(reading);
+}));
+
+router.delete("/:readingId", wrap(function* (req, res) {
+  yield schema.Reading.findByIdAndRemove(req.params.readingId);
+  res.json({
+    status: "ok"
   });
-});
+}));
+
 module.exports = router;

@@ -11,10 +11,11 @@ COPY .bowerrc /usr/src/app/
 
 
 RUN npm i bower -g
+RUN npm i pm2 -g
 RUN npm i
 RUN bower install --allow-root --force-latest
 
 EXPOSE 5000
 EXPOSE 3008
 EXPOSE 1883
-CMD ["npm", "start"]
+CMD ["pm2", "start", "index.js", "--no-daemon"]

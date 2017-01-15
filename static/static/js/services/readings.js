@@ -1,5 +1,8 @@
 app.factory("ReadingFactory", function($http, $q, GlobalSettings){
-  function readings(query_) {
+  function readings(query_, page) {
+    page = page || 0;
+    var limit = GlobalSettings.pagination.perPage;
+    var skip = page * GlobalSettings.pagination.perPage;
     var query=query_ || {};
     var def=$q.defer();
     $http.get("http://" + window.location.host + "/api/readings", {
@@ -11,8 +14,8 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
         limit: query.limit,
         skip: query.skip
       }, headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
-        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
+        'X-IOTFW-AppSecret': GlobalSettings.selectedApp.secret
       }
     })
     .then(function(response) {
@@ -32,7 +35,7 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
       meta: meta
     }, {
       headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
         'x-iotfw-devicetoken': token
       }
     });
@@ -44,7 +47,7 @@ app.factory("ReadingFactory", function($http, $q, GlobalSettings){
       data: reading.data
     }, {
       headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
         'x-iotfw-devicetoken': token
       }
     });

@@ -1,10 +1,6 @@
 app.controller("DefaultCtrl", function($scope, credentials, GlobalSettings){
   $scope.credentials=credentials;
-  $scope.appSettings=GlobalSettings.app;
-});
-
-app.controller("MenuCtrl", function($scope, GlobalSettings){
-  $scope.app=GlobalSettings.app;
+  $scope.appSettings=GlobalSettings.selectedApp;
 });
 
 /*

@@ -3,8 +3,8 @@ app.factory("DeviceFactory", function($http, $q, GlobalSettings){
     var def=$q.defer();
     $http.get("http://"+window.location.host+"/api/devices",{
       headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
-        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
+        'X-IOTFW-AppSecret': GlobalSettings.selectedApp.secret
       }
     })
     .then(function(response){
@@ -24,8 +24,8 @@ app.factory("DeviceFactory", function($http, $q, GlobalSettings){
       applicationName: _.get(device, "application.name")
     }, {
       headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
-        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
+        'X-IOTFW-AppSecret': GlobalSettings.selectedApp.secret
       }})
     .then(function(response){
       return def.resolve(response.data);
@@ -38,8 +38,8 @@ app.factory("DeviceFactory", function($http, $q, GlobalSettings){
   function regenToken(deviceId){
     return $http.get("http://"+window.location.host+"/api/devices/"+deviceId+"/regen_token", {
       headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
-        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
+        'X-IOTFW-AppSecret': GlobalSettings.selectedApp.secret
       }
     })
   }
@@ -50,8 +50,8 @@ app.factory("DeviceFactory", function($http, $q, GlobalSettings){
       type: device.type
     }, {
       headers: {
-        'X-IOTFW-AppToken': GlobalSettings.app.appToken,
-        'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+        'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
+        'X-IOTFW-AppSecret': GlobalSettings.selectedApp.secret
       }
     });
   }

@@ -1,9 +1,12 @@
-app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFactory, ApplicationFactory, devices, applications){
+app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFactory, ApplicationFactory, GlobalSettings, devices, applications){
   $scope.newReading={
     meta: {
       loc: [0,0]
     }
   };
+
+  $scope.pagination = GlobalSettings.pagination;
+
   $scope.page={
     page: 0,
     total: 0,
@@ -47,7 +50,7 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
       $mdToast.showSimple("Reading created");
     })
     .catch(function(err){
-      $mdToast.showSimple("Reading creation failed!");      
+      $mdToast.showSimple("Reading creation failed!");
     });
   };
   
@@ -88,7 +91,7 @@ app.controller("ReadingsCtrl", function($scope, $mdDialog, $mdToast, ReadingFact
       return;
     }
     $scope.refreshReadings();
-  }
+  };
   
   $scope.deleteDialog = function () {
   			ReadingFactory.deleteReading($scope.selectedReading)

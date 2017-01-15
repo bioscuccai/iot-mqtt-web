@@ -30,12 +30,13 @@ app.factory('DashboardFactory', function($http, $q){
 */
 app.factory("MessageFactory", function($http, $q, GlobalSettings){
   function newMessage(payload){
+    console.log(GlobalSettings.selectedApp);
     return $http.post("http://"+window.location.host+"/api/applications/messages", {
       payload: JSON.stringify(payload)
     }, {
       headers: {
-      'X-IOTFW-AppToken': GlobalSettings.app.appToken,
-      'X-IOTFW-AppSecret': GlobalSettings.app.appSecret
+      'X-IOTFW-AppToken': GlobalSettings.selectedApp.token,
+      'X-IOTFW-AppSecret': GlobalSettings.selectedApp.secret
       }
     });
   }

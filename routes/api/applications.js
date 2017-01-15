@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const _ = require('lodash');
+const wrap = require('co-express');
 
 const schema = require('../../schema');
 const utils = require('../../utils');
@@ -18,53 +19,43 @@ router.post("/messages", auth.authApplication, (req, res) => {
   res.json("ok");
 });
 
-router.get("/credentials", (req, res) => {
+router.get("/credentials", wrap(function* (req, res) {
   res.json({
     mqttPort: process.env.MQTT_PORT,
     mqttWsPort: process.env.MQTT_WS_PORT
   });
-});
+}));
 
-router.get("/", (req, res) => {
-  schema.Application.find({}).lean().exec()
-  .then(applications=>{
-    res.json(applications);
-  });
-});
+router.get("/", wrap(function* (req, res) {
+  let apps = yield schema.Application.find().lean();
 
-router.post("/", (req, res) => {
-  utils.registerApplication(req.body.name, req.body.description)
-  .then(application=>{
-    res.json(application);
-  });
-});
+  res.json(apps);
+}));
 
-router.post('/:appId', (req, res) => {
-  schema.Application.findByIdAndUpdate(req.params.appId, {
+router.post("/", wrap(function* (req, res) {
+  let app = yield utils.registerApplication(req.body.name, req.body.description)
+  res.json(app);
+}));
+
+router.post('/:appId', wrap(function* (req, res) {
+  let app = yield schema.Application.findByIdAndUpdate(req.params.appId, {
     name: req.body.name,
     description: req.body.description
-  })
-  .then(upd => {
-    return res.json({
-      status: 'ok'
-    });
+  }, {
+    new: true,
+    lean: true
   });
-});
 
-router.delete("/:appId", (req, res) => {
-  schema.Application.findByIdAndRemove(req.params.appId)
-  .then(del => {
-    return res.json({
-      status: "ok"
-    })
-  })
-  .catch(error => {
-    return res.json({
-      status: "error",
-      error
-    });
+  res.json(app);
+}));
+
+router.delete("/:appId", wrap(function* (req, res) {
+  yield schema.Application.findByIdAndRemove(req.params.appId);
+
+  res.json({
+    status: "ok"
   });
-});
+}));
 
 
 module.exports = router;

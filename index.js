@@ -25,6 +25,7 @@ app.use(methodOverride('_method'));
 websockets.setup(http);
 app.set("view engine", "jade");
 app.set("views", "./templates");
+app.disable('view cache');
 app.use((req, res, next)=>{
   let form=new formidable.IncomingForm();
   form.keepExtensions=true; //perserve the extensions

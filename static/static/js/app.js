@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngMaterial', 'ui.router', 'btford.socket-io', 'chart.js', 'hljs']);
+var app = angular.module('app', ['ngMaterial', 'ui.router', 'btford.socket-io', 'chart.js', 'hljs', 'angularUtils.directives.dirPagination']);
 
 app.config(function(hljsServiceProvider){
   hljsServiceProvider.setOptions({
@@ -11,12 +11,19 @@ app.value('GlobalSettings',{
     appToken: 'demo',
     appSecret: 'demo',
     name: 'N/A'
-  }
+  },
+  pagination: {
+    perPage: 100
+  },
+  selectedApp: {}
 });
 
 app.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/");
-  
+  var menuView = {
+    controller: 'MenuCtrl',
+    templateUrl: 'templates/menu.html'
+  };
   $stateProvider.state("default", {
     url: '/',
     views: {
@@ -28,10 +35,11 @@ app.config(function($stateProvider, $urlRouterProvider) {
             return DashboardFactory.credentials();
           }
         } 
-      }
+      },
+      menu: menuView
     }
   });
-  
+
   $stateProvider.state("devices", {
     url: '/devices',
     views: {
@@ -46,7 +54,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
             return ApplicationFactory.applications();
           }
         }
-      }
+      },
+      menu: menuView
     }
   });
   
@@ -64,7 +73,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
             return ApplicationFactory.applications();
           }
         }
-      }
+      },
+      menu: menuView
     }
   });
   
@@ -79,7 +89,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
             return ReadingFactory.readings({limit: 100});
           }
         }
-      }
+      },
+      menu: menuView
     }
   });
   
@@ -94,7 +105,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
             return DeviceFactory.devices();
           }
         }
-      }
+      },
+      menu: menuView
     }
   });
   
@@ -109,18 +121,23 @@ app.config(function($stateProvider, $urlRouterProvider) {
             return ApplicationFactory.applications();
           }
         }
-      }
+      },
+      menu: menuView
     }
   });
 });
 
-app.run(function(ApplicationFactory, GlobalSettings){
+app.run(function(ApplicationFactory, GlobalSettings, $rootScope){
   ApplicationFactory.applications()
   .then(applications=>{
+    GlobalSettings.cachedApps = applications;
     var lastApp=_.last(applications);
-    GlobalSettings.app.name=lastApp.name;
-    GlobalSettings.app.appToken=lastApp.token;
-    GlobalSettings.app.appSecret=lastApp.secret;
-    
+    //console.log(applications);
+    _.assign(GlobalSettings.selectedApp, lastApp);
+  });
+
+  $rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
+    event.preventDefault();
+    console.log(error);
   });
 });

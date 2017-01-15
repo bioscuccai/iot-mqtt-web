@@ -1,0 +1,39 @@
+<md-sidenav class="md-sidenav-left md-whiteframe-z2" md-is-open="true" md-is-locked-open="true">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <span>
+        Menu
+      </span>
+    </div>
+  </md-toolbar>
+  <select ng-options="app._id as app.name for app in apps"
+    ng-model="selectedApp.id" ng-change="selectedAppChanged()">
+  </select>
+  <md-list>
+    <md-list-item>
+      <span ui-sref="applications" style="width: 100%">
+        Applications
+      </span>
+    </md-list-item>
+    <md-list-item>
+      <span ui-sref="devices" style="width: 100%">
+        Devices
+      </span>
+    </md-list-item>
+    <md-list-item>
+      <span ui-sref="readings" style="width: 100%">
+        Readings
+      </span>
+    </md-list-item>
+    <md-list-item>
+      <span ui-sref="charts" style="width: 100%">
+        Charts
+      </span>
+    </md-list-item>
+    <md-list-item>
+      <span ui-sref="messages" style="width: 100%">
+        Messages
+      </span>
+    </md-list-item>
+  </md-list>
+</md-sidenav>

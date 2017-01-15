@@ -65,9 +65,7 @@ app.controller("ApplicationsCtrl", function($scope, $mdToast, $mdDialog, Applica
   };
   
   $scope.selectApplicationDialog=function(app){
-    GlobalSettings.app.appToken=$scope.selectedApplication.token;
-    GlobalSettings.app.appSecret=$scope.selectedApplication.secret;
-    GlobalSettings.app.name=$scope.selectedApplication.name;
+    _.assign(GlobalSettings, app, $scope.selectedApplication);
     $mdDialog.hide();
     $mdToast.showSimple("Application selected");
   };

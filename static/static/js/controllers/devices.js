@@ -19,8 +19,6 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
       .saveDevice($scope.selectedDevice)
       .then(function (res) {
         $mdDialog.hide();
-        console.log(res);
-        $mdToast.showSimple("Device modified");
         $scope.refreshDevices();
       })
       .catch(function (err) {
@@ -47,6 +45,7 @@ app.controller("DevicesCtrl", function($scope, $mdDialog, $mdToast, DeviceFactor
       .then(function (res) {
         $mdToast.showSimple("Device created");
         $scope.refreshDevices();
+        $mdDialog.hide();
       })
       .catch(function (err) {
         $mdToast.showSimple("Device creation failed");
