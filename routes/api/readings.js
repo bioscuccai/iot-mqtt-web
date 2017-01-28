@@ -85,6 +85,18 @@ router.post("/:readingId", wrap(function* (req, res) {
   res.json(reading);
 }));
 
+router.get('/:readingId', wrap(function* (req, res) {
+  let reading = schema.Reading
+    .findOneById(req.params.readingId)
+    .lean();
+  
+  if (!) {
+    return res.status(404);
+  }
+  
+  return res.json(reading);
+}));
+
 router.delete("/:readingId", wrap(function* (req, res) {
   yield schema.Reading.findByIdAndRemove(req.params.readingId);
   res.json({

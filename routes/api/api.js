@@ -12,12 +12,13 @@ const applications = require('./applications');
 const devices = require('./devices');
 const readings = require('./readings');
 
-router.get("/", (req, res) => {
+router.get('/', (req, res) => {
   res.json({});
 });
 
-router.use("/devices", devices);
-router.use("/readings", readings);
-router.use("/applications", applications);
+
+router.use('/applications", applications);
+router.use('/applications/:appId/devices', devices);
+router.use('/applications/:appId/readings', readings);
 
 module.exports = router;

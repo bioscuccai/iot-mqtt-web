@@ -11,15 +11,20 @@ const auth = require('../../auth');
 const logger = require('../../logger');
 const router=express.Router();
 
+let population = {
+  path: 'application',
+  options: {
+    lean: true
+  }
+};
+
 router.get("/", auth.authApplication, wrap(function* (req, res) {
   let devices = yield schema.Device
-    .find({})
+    .find({
+      application: req.params.appId
+    })
     .lean()
-    .populate({
-      path: 'application',
-      options: {
-        lean: true
-    }});
+    .populate(population);
   res.json(devices.reverse());
 }));
 
@@ -45,6 +50,19 @@ router.get("/:deviceId/regen_token", auth.authApplication, wrap(function* (req, 
   res.json(device);
 }));
 
+router.get('/:deviceId', wrap(function* (req, res) {
+  let device = yield schema.Device
+    .findOneById(req.params.deviceId)
+    .populate(population)
+    .lean();
+    
+  if(!device) {
+    return res.status(404);
+  }
+  
+  return res.json(device);
+}));
+
 router.post("/:deviceId", wrap(function* (req, res) {
   let device = schema.Device.findByIdAndUpdate(req.params.deviceId, {
     type: req.body.type,
@@ -53,6 +71,8 @@ router.post("/:deviceId", wrap(function* (req, res) {
     lean: true,
     new: true
   });
+  
+  yield device.populate(population).execPopulate();
 
   res.json(device);
 }));
