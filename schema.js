@@ -1,4 +1,5 @@
 'use strict';
+
 const mongoose = require('mongoose');
 const bluebird = require('bluebird');
 const logger = require('./logger');
@@ -13,15 +14,41 @@ var applicationSchema = mongoose.Schema({
   secret: String
 }, {timestamps: true});
 
+applicationSchema.statics.toJSON = function (application) {
+  if (!application) {
+    return null;
+  }
+  return {
+    id: application._id.toString(),
+    name: application.name,
+    descriptions: application.description,
+    token: application.token,
+    secret: application.secret
+  };
+};
+
 var deviceSchema = mongoose.Schema({
   name: {type: String, index: 1, required: true},
   type: {type: String},
   token: String,
   application: {type: mongoose.Schema.Types.ObjectId, index: 1, ref: 'Application', required: true}
 }, {timestamps: true});
-deviceSchema.index({name: 1, type: 1}, {unique: true});
-deviceSchema.index({token: 1}, {unique: true});
-deviceSchema.index({application: 1});
+//deviceSchema.index({name: 1, type: 1}, {unique: true});
+//deviceSchema.index({token: 1}, {unique: true});
+//deviceSchema.index({application: 1});
+
+deviceSchema.statics.toJSON = function (device) {
+  if (!device) {
+    return null;
+  }
+  return {
+    id: device._id.toString(),
+    name: device.name,
+    type: device.type,
+    application: applicationSchema.statics.toJSON(device.application),
+    token: device.token
+  };
+};
 
 var deviceType = mongoose.Schema({
   name: String,
@@ -36,6 +63,16 @@ var readingSchema = mongoose.Schema({
 }, {timestamps: true});
 readingSchema.index({loc: '2dsphere'});
 
+readingSchema.statics.toJSON = function (reading) {
+  return {
+    id: reading._id.toString(),
+    device: reading.device,
+    loc: reading.loc,
+    data: reading.data,
+    createdAt: reading.createdAt,
+    updatedAt: reading.updatedAt
+  };
+};
 
 var Application = mongoose.model('Application', applicationSchema);
 var Device = mongoose.model('Device', deviceSchema);

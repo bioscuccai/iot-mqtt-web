@@ -1,4 +1,5 @@
 'use strict';
+
 const express = require('express');
 const _ = require('lodash');
 const wrap = require('co-express');
@@ -11,14 +12,18 @@ const auth = require('../../auth');
 const logger = require('../../logger');
 
 
-var router=express.Router();
+var router = express.Router();
+
+const Reading = schema.Reading;
+const Device = schema.Device;
+const Application = schema.Application;
 
 router.get("/", auth.authApplication, wrap(function*(req, res) {
   let limit = Math.max(0, parseInt(req.query.limit)) || 100;
   let skip = Math.max(0, parseInt(req.query.skip)) || 0;  
-  let application = yield schema.Application
+  let application = yield Application
     .findOne({
-      token: req.headers['x-iotfw-apptoken']
+      //token: req.headers['x-iotfw-apptoken']
     })
     .select('')
     .limit(limit)
@@ -39,7 +44,7 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
   }
 
 
-  let filteredDevices = yield schema.Device.find(deviceFilter)
+  let filteredDevices = yield Device.find(deviceFilter)
     .lean()
     .exec();
   if (req.query.filterApplication) {
@@ -48,8 +53,8 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
     };
   }
 
-  let total = yield schema.Reading.count(filter);
-  let readings=yield schema.Reading.find(filter).sort({createdAt: -1})
+  let count = yield schema.Reading.count(filter);
+  let readings=yield Reading.find().sort({createdAt: -1})
     .populate({
       path: 'device',
       options: {
@@ -62,8 +67,8 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
     .lean()
     .exec();
   res.json({
-    total,
-    readings
+    count,
+    readings: readings.map(Reading.toJSON)
   });
   })
 );
@@ -74,7 +79,7 @@ router.post("/", auth.authDevice, wrap(function*(req, res) {
 }));
 
 router.post("/:readingId", wrap(function* (req, res) {
-  let reading = schema.Reading.findByIdAndUpdate(req.params.readingId, {
+  let reading = Reading.findByIdAndUpdate(req.params.readingId, {
     data: req.body.data,
     type: req.body.type
   }, {
@@ -82,23 +87,23 @@ router.post("/:readingId", wrap(function* (req, res) {
     lean: true
   });
 
-  res.json(reading);
+  res.json(Readings.toJSON(reading));
 }));
 
 router.get('/:readingId', wrap(function* (req, res) {
-  let reading = schema.Reading
+  let reading = Reading
     .findOneById(req.params.readingId)
     .lean();
   
-  if (!) {
+  if (!reading) {
     return res.status(404);
   }
   
-  return res.json(reading);
+  return res.json(Reading.toJSON(reading));
 }));
 
 router.delete("/:readingId", wrap(function* (req, res) {
-  yield schema.Reading.findByIdAndRemove(req.params.readingId);
+  yield Reading.findByIdAndRemove(req.params.readingId);
   res.json({
     status: "ok"
   });

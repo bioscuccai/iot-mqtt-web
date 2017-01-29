@@ -8,9 +8,11 @@ const utils = require('../../utils');
 const services = require('../../services');
 const auth = require('../../auth');
 
-const logger=require('../../logger');
+const logger = require('../../logger');
 
-var router=express.Router();
+var router = express.Router();
+
+const Application = schema.Application;
 
 router.post("/messages", auth.authApplication, (req, res) => {
   logger.info(req.body);
@@ -27,18 +29,26 @@ router.get("/credentials", wrap(function* (req, res) {
 }));
 
 router.get("/", wrap(function* (req, res) {
-  let apps = yield schema.Application.find().lean();
+  let apps = yield Application.find().lean();
 
-  res.json(apps);
+  res.json(apps.map(Application.toJSON));
+}));
+
+router.get('/:appId', wrap(function*(req, res) {
+  let app = yield Application.findById({
+    _id: req.params.appId
+  });
+
+  res.json(Application.toJSON(app));
 }));
 
 router.post("/", wrap(function* (req, res) {
-  let app = yield utils.registerApplication(req.body.name, req.body.description)
-  res.json(app);
+  let app = yield utils.registerApplication(req.body.name, req.body.description);
+  return res.json(Application.toJSON(app));
 }));
 
 router.post('/:appId', wrap(function* (req, res) {
-  let app = yield schema.Application.findByIdAndUpdate(req.params.appId, {
+  let app = yield Application.findByIdAndUpdate(req.params.appId, {
     name: req.body.name,
     description: req.body.description
   }, {
@@ -46,16 +56,15 @@ router.post('/:appId', wrap(function* (req, res) {
     lean: true
   });
 
-  res.json(app);
+  res.json(Application.toJSON(app));
 }));
 
 router.delete("/:appId", wrap(function* (req, res) {
-  yield schema.Application.findByIdAndRemove(req.params.appId);
+  yield Application.findByIdAndRemove(req.params.appId);
 
   res.json({
     status: "ok"
   });
 }));
-
 
 module.exports = router;

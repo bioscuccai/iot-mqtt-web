@@ -17,8 +17,8 @@ router.get('/', (req, res) => {
 });
 
 
-router.use('/applications", applications);
-router.use('/applications/:appId/devices', devices);
-router.use('/applications/:appId/readings', readings);
+router.use('/applications', applications);
+router.use('/devices', devices);
+router.use('/readings', readings);
 
 module.exports = router;
