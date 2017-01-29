@@ -1,0 +1,21 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true,
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "rules": {
+    "semi": 2,
+    "no-undef": 2
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+    
+  "plugins": ["destructuring"],
+  "extends": ["plugin:destructuring/recommended"]
+}
