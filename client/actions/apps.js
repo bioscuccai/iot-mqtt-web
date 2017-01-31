@@ -115,5 +115,41 @@ export default {
       type: 'FETCH_CREDENTIALS_SUCCESS',
       credentials
     };
+  },
+  
+  sendMessage(appId, payload) {
+    return dispatch => {
+      if (_.isString(payload)) {
+        try {
+          payload = JSON.parse(payload);
+        } catch (err) {
+          return = dispatch(this.sendMessageFailure(err));
+        }
+      }
+      
+      return axios.post(`/api/applications/${appId}/messages`, payload)
+      .then(data => {
+        dispatch(this.sendMessageSuccess(data.data));
+        return data.data;
+      })
+      .catch(err => {
+        console.error(err);
+        return dispatch(this.sendMessageError(err));
+      });
+    }
+  },
+  
+  sendMessageSuccess(response) {
+    return {
+      type: 'SEND_MESSAGE_SUCCESS'
+      response
+    };
+  },
+  
+  sendMessageFailure(err) {
+    return {
+      type: 'SEND_MESSAGE_FAILURE',
+      err
+    };
   }
 };

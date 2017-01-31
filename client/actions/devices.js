@@ -93,5 +93,22 @@ export default {
       type: 'UPDATE_DEVICE_SUCCESS',
       device
     };
+  },
+  
+  regenDeviceToken(deviceId) {
+    return dispatch => {
+      return axios.post(`/api/devices/${deviceId}`)
+      .then(data => {
+        dispatch(this.regenTokenSuccess(data.data));
+        return data.data;
+      });
+    };
+  },
+  
+  regenDeviceTokenSuccess(data) {
+    return {
+      type: 'REGEN_TOEK_SUCCESS',
+      data
+    };
   }
 };

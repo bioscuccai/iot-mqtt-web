@@ -1,6 +1,7 @@
 'use strict';
 
 import axios from 'axios';
+import _ from 'lodash';
 
 export default {
   fetchReadings (filter) {
@@ -8,7 +9,6 @@ export default {
       return axios.get(`/api/readings`)
       .then(data => {
         dispatch(this.fetchReadingsSuccess(data.data));
-        console.log('reading succ');
         return data.data;
       })
       .catch(err => {
@@ -18,7 +18,6 @@ export default {
   },
 
   fetchReadingsSuccess(readings) {
-    console.log('reading succ 2');
     return {
       type: 'FETCH_READINGS_SUCCESS',
       readings
@@ -39,6 +38,101 @@ export default {
     return {
       type: 'FETCH_CURRENT_READING_SUCCESS',
       reading
+    };
+  },
+  
+  createReading(reading) {
+    return dispatch => {
+      let data;
+      let meta
+      if (_.isString(reading.data)) {
+        try {
+          data = JSON.parse(reading.data);
+        } catch (err) {
+          return dispatch(this.updateReadingFailure(err));
+        }
+      }
+      if (_.isString(reading.meta)) {
+        try {
+          meta = JSON.parse(reading.meta);
+        } catch (err) {
+          return dispatch(this.updateReadingFailure(err));
+        }
+      }
+      return axios.post('/api/readings', {
+        data,
+        meta: reading.meta
+      })
+      .then(data => {
+        dispatch(this.createReadingSuccess(data.data));
+        return data.data;
+      })
+      .catch(err => {
+        console.error(err);
+        dispatch(this.createReadingFailure(err));
+      });
+    };
+  },
+
+  createReadingSuccess(reading) {
+    return {
+      type: 'CREATE_READING_SUCCESS',
+      reading
+    };
+  },
+
+  createReadingFailure (err) {
+    return {
+      type: 'CREATE_READING_FAILURE',
+      err
+    };
+  },
+
+  updateReading(reading) {
+    return dispatch => {
+      let data;
+      let meta
+      if (_.isString(reading.data)) {
+        try {
+          data = JSON.parse(reading.data);
+        } catch (err) {
+          return dispatch(this.updateReadingFailure(err));
+        }
+      }
+      if (_.isString(reading.meta)) {
+        try {
+          meta = JSON.parse(reading.meta);
+        } catch (err) {
+          return dispatch(this.updateReadingFailure(err));
+        }
+      }
+
+      return axios.post(`/api/readings/${reading.id}`, {
+        data,
+        meta
+      })
+      .then(data => {
+        dispatch(this.updateReadingSuccess(data.data));
+        return data.data;
+      })
+      .catch(err => {
+        console.error(err);
+        dispatch(this.updateReadingFailure(err));
+      });
+    };
+  },
+  
+  updateReadingSuccess(reading) {
+    return {
+      type: 'UPDATE_READING_SUCCESS',
+      reading
+    };
+  },
+  
+  updateReadingFailure(err) {
+    return {
+      type: 'UPDATE_READING_ERROR',
+      err
     };
   }
 };

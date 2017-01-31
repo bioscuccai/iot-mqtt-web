@@ -40,7 +40,13 @@ export default React.createClass({
       application: this.props.application.id
     })
     .then(data => {
+      this.props.refreshDevices();
+      this.props.close();
       NotificationManager.info('Device has been created');
+    })
+    .catch(err => {
+      console.error(err);
+      NotificationManager.error('Error creating device');
     });
   }
 });

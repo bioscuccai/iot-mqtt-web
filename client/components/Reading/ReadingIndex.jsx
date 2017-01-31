@@ -8,6 +8,7 @@ import ReadingItem from './ReadingItem.jsx';
 import readingActions from '../../actions/readings';
 
 import ReadingNewDialog from './ReadingNewDialog.jsx';
+import ReadingEditDialog from './ReadingEditDialog.jsx';
 
 const ReadingIndex = React.createClass({
   getInitialState() {
@@ -32,7 +33,7 @@ const ReadingIndex = React.createClass({
   },
 
   handleRefresh () {
-    this.props.fetchReadings();
+    this.props.fetchReadings({appId: this.props.apps.selectedApp.id});
   },
 
   render () {
@@ -41,7 +42,7 @@ const ReadingIndex = React.createClass({
       <AppBar title='Readings'>
         <Navigation type='horizontal'>
           <Link label='New' onClick={this.setModal.bind(this, 'new', true)}/>
-          <Link label='Refresh' onClick={this.handleRefresh} />
+          <Link label='Refresh' onClick={this.refreshReadings} />
         </Navigation>
       </AppBar>
 
@@ -49,6 +50,16 @@ const ReadingIndex = React.createClass({
         active={!!this.state.modals.new}
         devices={this.props.devices.devices}
         close={this.setModal.bind(this, 'new', false)}
+        refreshReadings={this.refreshReadings}
+        selectedApp={this.props.apps.selectedApp}
+      />
+      
+      <ReadingEditDialog active={!!this.state.modals.edit}
+        ref='editModal'
+        reading={this.props.readings.currentReading}
+        close={this.setModal.bind(this, 'edit', false)}
+        updateDevice={this.props.updateReading}
+        refreshReadings={this.refreshReadings}
       />
 
       <List>
@@ -60,11 +71,28 @@ const ReadingIndex = React.createClass({
       })}
       </List>
     </div>;
+  }.
+
+  openEditDialog(readingId) {
+    this.props.fetchCurrentReading(readingId)
+    .then(reading => {
+      thiss.refs.editModal.reset();
+      this.setModal(edit, true);
+    })
+    .catch(err => {
+      console.error(err);
+      NotificationManager.error(err);
+    });
+  },
+
+  refreshReadings() {
+    return this.props.fetchReadings({
+      appId: this.props.apps.selectedApp.id
+    });
   }
 });
 
 export default connect(state => {
-  console.log(state);
   return {
     readings: state.readings,
     devices: state.devices,

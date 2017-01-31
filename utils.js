@@ -7,6 +7,7 @@ const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 const crayon = require('crayon');
 const _ = require('lodash');
+const co = require('co');
 const logger = require('./logger');
 
 class ReadingWatcher{
@@ -42,87 +43,65 @@ function registerApplication(name, description){
   });
 }
 
-function storeReading(token, data, type, meta){
-  return new Promise(function(resolve, reject) {
-    let device;
-    schema.Device.findOne({token}).populate('application').exec()
-    .then(deviceDb=>{
-      device=deviceDb;
-      if(!device){
-        throw(new Error('invalid token'));
-      }
-      console.log(data);
-      return schema.Reading.create({
-        device: device._id,
-        application: device.application._id,
-        data: data,
-        type: type,
-        loc: [_.get(meta, 'loc[0]', 0), _.get(meta, 'loc[1]', 0)]
-      });
-    })
-    .then(reading => {
-      logger.info('stored reading');
-      logger.info(reading);
-      logger.info('device:');
-      logger.info(device);
-      readingWatcher.emit('new_reading', _.merge(reading, {appToken: device.application.token})); //pass app token too
-      return resolve(reading);
-    })
-    .catch(e => {
-      logger.error(e);
-      return reject(e);
-    });
+const storeReading = co.wrap(function*(token, data, type, meta){
+  let device = yield schema.Device.findOne({token}).populate('application');
+  if (!device) {
+    throw(new Error('invalid token'));
+  }
+  console.log(data);
+  let reading = yield schema.Reading.create({
+    device: device._id,
+    application: device.application._id,
+    data: data,
+    type: type,
+    loc: [_.get(meta, 'loc[0]', 0), _.get(meta, 'loc[1]', 0)]
   });
-}
+  logger.info('stored reading');
+  logger.info(reading);
+  logger.info('device:');
+  logger.info(device);
+  readingWatcher.emit('new_reading', _.merge(reading.toObject(), {appToken: device.application.token})); //pass app token too
+  return reading;
+});
 
-function validApplication(username, password){
-  return new Promise(function(resolve, reject) {
-    schema.Application.findOne({
-      token: username,
-      secret: password.toString()
-    })
-    .then(appDb => {
-      if(appDb){
-        logger.info(`App authenticated: ${appDb.name}`);
-        return resolve({
-          type: 'app',
-          appToken: username,
-          appName: appDb.name
-        });
-      } else {
-        logger.error('App rejected');
-        return reject(new Error('invalid app'));
-      }
-    });
+const validApplication = co.wrap(function* (username, password){
+  let appDb = yield schema.Application.findOne({
+    token: username,
+    secret: password.toString()
   });
-}
+  if (appDb) {
+    logger.info(`App authenticated: ${appDb.name}`);
+    return {
+      type: 'app',
+      appToken: username,
+      appName: appDb.name
+    };
+  } else {
+    logger.error('App rejected');
+    throw new Error('invalid app');
+  }
+});
 
-function validDevice(username, password) {
-  return new Promise(function(resolve, reject) {
-    schema.Application.findOne({token: username})
-    .then(appDb => {
-      if(!appDb) {
-        logger.error('device/app rejected');
-        return reject(new Error('invalid app'));
-      }
-      return schema.Device.findOne({token: password});
-    })
-    .then(deviceDb => {
-      if(!deviceDb) {
-        logger.error('Device rejected');
-        return reject(new Error("invalid device"));
-      }
-      logger.info(`Device authenticated: ${deviceDb.name}`);
-      return resolve({
-        type: 'device',
-        deviceToken: password,
-        deviceName: deviceDb.name,
-        deviceType: deviceDb.type,
-        appToken: username
-      });
-    });
-  });
-}
+const validDevice = co.wrap(function* (username, password) {
+  let appDb = yield schema.Application.findOne({token: username})
+  if(!appDb) {
+    logger.error('device/app rejected');
+    return reject(new Error('invalid app'));
+  }
+  let deviceDb = yield schema.Device.findOne({token: password});
+  if(!deviceDb) {
+    logger.error('Device rejected');
+    return reject(new Error("invalid device"));
+  }
+  logger.info(`Device authenticated: ${deviceDb.name}`);
+  return {
+    type: 'device',
+    deviceToken: password,
+    deviceName: deviceDb.name,
+    deviceType: deviceDb.type,
+    appToken: username
+  };
+});
 
 function validTokenPair(username, password) {
   return bluebird.any([
@@ -140,7 +119,7 @@ function mqttAuthenticate(client, username, password, callback) {
     client.user=authData;
     logger.info(`Authenticated ${client.user.appName || client.user.deviceName}`);
     callback(null, true);
-  }).catch(authErr=>{
+  }).catch(authErr => {
     logger.error(authErr);
     logger.error('Rejected');
     callback(authErr, false);
@@ -195,9 +174,9 @@ function mqttAuthorizeSubscribe(client, topic, callback) {
 
 services.moscaServer.on('ready', () => {
   logger.info('Mosca server ready');
-  services.moscaServer.authenticate=mqttAuthenticate;
-  services.moscaServer.authorizeSubscribe=mqttAuthorizeSubscribe;
-  services.moscaServer.authorizePublish=mqttAuthorizePublish;
+  services.moscaServer.authenticate = mqttAuthenticate;
+  services.moscaServer.authorizeSubscribe = mqttAuthorizeSubscribe;
+  services.moscaServer.authorizePublish = mqttAuthorizePublish;
 });
 
 services.moscaServer.on('clientConnected', client => {
@@ -209,9 +188,9 @@ function sendMessage(payload, appToken) {
   logger.info(payload);
   let deviceFilter = {};
   //targeted device => each device gets notified on its own topic
-  if(payload.targetDevice){
+  if (payload.targetDevice) {
     logger.info('targeting device');
-    if(payload.targetDevice){ //all devices with the given name
+    if (payload.targetDevice) { //all devices with the given name
       deviceFilter = _.merge({}, deviceFilter, {name: payload.targetDevice});
     }
     if(payload.targetDeviceType) { //single device (both the name and type are given)
@@ -265,7 +244,6 @@ services.moscaServer.on('published', (packet, client) => {
     } catch(e){
       logger.error(`failed to parse payload: ${packet.payload.toString()}`);
     }
-    
   }
 });
 
@@ -277,10 +255,6 @@ readingWatcher.on('new_reading', reading => {
     payload: JSON.stringify(reading)
   });
 });
-
-function createDemo () {
-
-}
 
 module.exports = {
   storeReading,

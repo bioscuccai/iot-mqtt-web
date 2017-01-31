@@ -72,10 +72,22 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
   });
   })
 );
-
+/*
 router.post("/", auth.authDevice, wrap(function*(req, res) {
   let reading = yield utils.storeReading(req.headers['x-iotfw-devicetoken'], JSON.parse(req.body.data), req.body.type, req.body.meta);
   res.json(reading);
+}));
+*/
+router.post('/', wrap(function* () {
+  let reading = yield Reading.create({
+    data: req.body.data,
+    loc: [
+      parseInt(_.get(req.body.meta, 'loc[0]', 0)),
+      parseInt(_.get(req.body.meta, 'loc[1]', 0))
+    ]
+  });
+  
+  return res.json(Reading.toJSON(reading));
 }));
 
 router.post("/:readingId", wrap(function* (req, res) {

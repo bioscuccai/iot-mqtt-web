@@ -6,7 +6,11 @@ import {NotificationManager} from 'react-notifications';
 
 export default React.createClass({
   getInitialState() {
-    return {};
+    return {
+      data: '',
+      meta: '',
+      device: null
+    };
   },
 
   render() {
@@ -28,10 +32,11 @@ export default React.createClass({
       title='New Reading'
       actions={actions}>
       <Dropdown label='Device'
-        value={this.state.deviceId}
-        onChange={this.handleChange.bind(this, 'deviceId')}
+        value={this.state.device}
+        onChange={this.handleChange.bind(this, 'device')}
         source={devices}/>
-      <Input label='Payload' value={this.state.payload} onChange={this.handleChange.bind(this, 'payload')}/>
+      <Input label='Application' value={this.props.selectedApp.name} disabled={true}/>
+      <Input label='Data' value={this.state.data} multiLine={true}  onChange={this.handleChange.bind(this, 'data')}/>
     </Dialog>;
   },
 

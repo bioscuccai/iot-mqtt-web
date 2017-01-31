@@ -74,6 +74,18 @@ readingSchema.statics.toJSON = function (reading) {
   };
 };
 
+readingSchema.statics.toJSON = function (reading) {
+  if (!reading) {
+    return null;
+  }
+  
+  return {
+    id: reading._id.toString(),
+    data: reading.data,
+    loc: reading.loc
+  };
+};
+
 var Application = mongoose.model('Application', applicationSchema);
 var Device = mongoose.model('Device', deviceSchema);
 var Reading = mongoose.model('Reading', readingSchema);

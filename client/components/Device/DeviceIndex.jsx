@@ -48,7 +48,7 @@ const DeviceIndex = React.createClass({
         close={this.setModal.bind(this, 'new', false)}
         createDevice={this.props.createDevice}
         selectedApp={this.props.selectedApp}
-        fetchDevices={this.props.fetchDevices}/>
+        refreshDevices={this.props.refreshDevices}/>
 
       <DeviceEditDialog apps={this.props.apps.apps}
         ref='editModal'
@@ -58,7 +58,8 @@ const DeviceIndex = React.createClass({
         updateDevice={this.props.updateDevice}
         selectedApp={this.props.apps.selectedApp}
         device={this.props.devices.currentDevice}
-        fetchDevices={this.props.fetchDevices}/>
+        refreshDevices={this.props.refreshDevices}
+        regenDeviceToken={this.props.regenDeviceToken}/>
 
       <List>
         {this.props.devices.devices.map(device => {
@@ -83,6 +84,12 @@ const DeviceIndex = React.createClass({
     .then(data => {
       this.refs.editModal.reset();
       this.setModal('edit', true);
+    });
+  },
+  
+  refreshDevices() {
+    this.props.fetchDevices({
+      appId: this.props.apps.apps.selectedApp.id
     });
   }
 });
@@ -116,6 +123,10 @@ export default connect(state => {
 
     fetchCurrentDevice(deviceId) {
       return dispatch(deviceActions.fetchCurrentDevice(deviceId));
+    },
+    
+    regenDeviceToken(deviceToken) {
+      return dispatch(deviceActions.regenDeviceToken(deviceToken));
     }
   };  
 })(DeviceIndex);

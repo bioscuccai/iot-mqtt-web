@@ -69,7 +69,7 @@ router.delete("/:deviceId", wrap(function* (req, res) {
   });
 }));
 
-router.get("/:deviceId/regen_token", auth.authApplication, wrap(function* (req, res) {
+router.get("/:deviceId/regenToken", auth.authApplication, wrap(function* (req, res) {
   let device = yield Device.findByIdAndUpdate(req.params.deviceId, {
     token: securerandom.hex(16)
   }, {

@@ -14,10 +14,10 @@ var router = express.Router();
 
 const Application = schema.Application;
 
-router.post("/messages", auth.authApplication, (req, res) => {
+router.post("/:appId/messages", auth.authApplication, (req, res) => {
   logger.info(req.body);
   logger.info("####APPMESSAGE");
-  utils.sendMessage(JSON.parse(req.body.payload), req.headers['x-iotfw-apptoken']);
+  utils.sendMessage(req.body.payload, req.params.appId);
   res.json("ok");
 });
 
