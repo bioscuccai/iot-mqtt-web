@@ -3,6 +3,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {List, AppBar, Navigation, Link} from 'react-toolbox';
+import {NotificationManager} from 'react-notifications';
 
 import ReadingItem from './ReadingItem.jsx';
 import readingActions from '../../actions/readings';
@@ -71,13 +72,13 @@ const ReadingIndex = React.createClass({
       })}
       </List>
     </div>;
-  }.
+  },
 
   openEditDialog(readingId) {
     this.props.fetchCurrentReading(readingId)
     .then(reading => {
-      thiss.refs.editModal.reset();
-      this.setModal(edit, true);
+      this.refs.editModal.reset();
+      this.setModal('edit', true);
     })
     .catch(err => {
       console.error(err);

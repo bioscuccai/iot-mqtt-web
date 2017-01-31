@@ -48,7 +48,7 @@ export default React.createClass({
   
   handleUpdate() {
     this.props.updateReading(this.state)
-    .then(data => 
+    .then(data => {
       NotificationManager.info('Reading has been updated');
       this.props.close();
       return this.props.refreshReadings();

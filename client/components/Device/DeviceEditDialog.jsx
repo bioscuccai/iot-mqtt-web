@@ -28,7 +28,7 @@ export default React.createClass({
       <Input value={this.state.id} disabled={true}/>
       <Input value={this.state.name} label='Name' onChange={this.handleChange.bind(this, 'name')} />
       <Input value={this.state.type} label='Type' onChange={this.handleChange.bind(this, 'type')} />
-      <Input value={this.state.token} label='Token' disabled={true}}
+      <Input value={this.state.token} label='Token' disabled={true}/>
         disabled={true}/>
     </Dialog>;
   },

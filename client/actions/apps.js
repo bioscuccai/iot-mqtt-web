@@ -1,6 +1,7 @@
 'use strict';
 
 import axios from 'axios';
+import _ from 'lodash';
 
 export default {
   setSelectedApp (selectedApp) {
@@ -123,7 +124,7 @@ export default {
         try {
           payload = JSON.parse(payload);
         } catch (err) {
-          return = dispatch(this.sendMessageFailure(err));
+          return dispatch(this.sendMessageFailure(err));
         }
       }
       
@@ -136,12 +137,12 @@ export default {
         console.error(err);
         return dispatch(this.sendMessageError(err));
       });
-    }
+    };
   },
   
   sendMessageSuccess(response) {
     return {
-      type: 'SEND_MESSAGE_SUCCESS'
+      type: 'SEND_MESSAGE_SUCCESS',
       response
     };
   },
