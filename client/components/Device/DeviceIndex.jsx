@@ -34,7 +34,6 @@ const DeviceIndex = React.createClass({
   },
 
   render () {
-    console.log(this.props);
     return <div>
       <AppBar title='Devices'>
         <Navigation type='horizontal'>
@@ -48,7 +47,7 @@ const DeviceIndex = React.createClass({
         close={this.setModal.bind(this, 'new', false)}
         createDevice={this.props.createDevice}
         selectedApp={this.props.selectedApp}
-        refreshDevices={this.props.refreshDevices}/>
+        refreshDevices={this.refreshDevices}/>
 
       <DeviceEditDialog apps={this.props.apps.apps}
         ref='editModal'
@@ -58,8 +57,9 @@ const DeviceIndex = React.createClass({
         updateDevice={this.props.updateDevice}
         selectedApp={this.props.apps.selectedApp}
         device={this.props.devices.currentDevice}
-        refreshDevices={this.props.refreshDevices}
-        regenDeviceToken={this.props.regenDeviceToken}/>
+        refreshDevices={this.refreshDevices}
+        regenDeviceToken={this.props.regenDeviceToken}
+        fetchCurrentDevice={this.props.fetchCurrentDevice}/>
 
       <List>
         {this.props.devices.devices.map(device => {
@@ -89,7 +89,7 @@ const DeviceIndex = React.createClass({
   
   refreshDevices() {
     this.props.fetchDevices({
-      appId: this.props.apps.apps.selectedApp.id
+      appId: this.props.apps.selectedApp.id
     });
   }
 });

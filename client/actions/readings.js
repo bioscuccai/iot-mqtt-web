@@ -44,7 +44,7 @@ export default {
   createReading(reading) {
     return dispatch => {
       let data;
-      let meta
+      let meta;
       if (_.isString(reading.data)) {
         try {
           data = JSON.parse(reading.data);
@@ -61,7 +61,8 @@ export default {
       }
       return axios.post('/api/readings', {
         data,
-        meta: reading.meta
+        meta: meta,
+        device: reading.device
       })
       .then(data => {
         dispatch(this.createReadingSuccess(data.data));
@@ -69,7 +70,7 @@ export default {
       })
       .catch(err => {
         console.error(err);
-        dispatch(this.createReadingFailure(err));
+        dispatch(this.createReadingError(err));
       });
     };
   },
@@ -81,7 +82,7 @@ export default {
     };
   },
 
-  createReadingFailure (err) {
+  createReadingError (err) {
     return {
       type: 'CREATE_READING_FAILURE',
       err
@@ -91,7 +92,7 @@ export default {
   updateReading(reading) {
     return dispatch => {
       let data;
-      let meta
+      let meta;
       if (_.isString(reading.data)) {
         try {
           data = JSON.parse(reading.data);

@@ -20,10 +20,10 @@ applicationSchema.statics.toJSON = function (application) {
   }
   return {
     id: application._id.toString(),
-    name: application.name,
-    descriptions: application.description,
-    token: application.token,
-    secret: application.secret
+    name: application.name || '',
+    descriptions: application.description || '',
+    token: application.token || '',
+    secret: application.secret || ''
   };
 };
 
@@ -43,8 +43,8 @@ deviceSchema.statics.toJSON = function (device) {
   }
   return {
     id: device._id.toString(),
-    name: device.name,
-    type: device.type,
+    name: device.name || '',
+    type: device.type || '',
     application: applicationSchema.statics.toJSON(device.application),
     token: device.token
   };
@@ -59,16 +59,18 @@ var readingSchema = mongoose.Schema({
   data: {type: mongoose.Schema.Types.Mixed, required: true},
   type: String,
   device: {type: mongoose.Schema.Types.ObjectId, index: 1, ref: 'Device'},
-  loc: [Number]
+  loc: [Number],
+  meta: {type: mongoose.Schema.Types.Mixed}
 }, {timestamps: true});
 readingSchema.index({loc: '2dsphere'});
 
 readingSchema.statics.toJSON = function (reading) {
   return {
     id: reading._id.toString(),
-    device: reading.device,
+    device: deviceSchema.statics.toJSON(reading.device),
     loc: reading.loc,
     data: reading.data,
+    meta: reading.meta,
     createdAt: reading.createdAt,
     updatedAt: reading.updatedAt
   };
@@ -82,6 +84,7 @@ readingSchema.statics.toJSON = function (reading) {
   return {
     id: reading._id.toString(),
     data: reading.data,
+    meta: reading.meta,
     loc: reading.loc
   };
 };

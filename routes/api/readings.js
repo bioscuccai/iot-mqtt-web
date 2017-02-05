@@ -18,6 +18,13 @@ const Reading = schema.Reading;
 const Device = schema.Device;
 const Application = schema.Application;
 
+let population = {
+  path: 'device',
+  options: {
+    lean: true
+  }
+};
+
 router.get("/", auth.authApplication, wrap(function*(req, res) {
   let limit = Math.max(0, parseInt(req.query.limit)) || 100;
   let skip = Math.max(0, parseInt(req.query.skip)) || 0;  
@@ -55,12 +62,7 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
 
   let count = yield schema.Reading.count(filter);
   let readings=yield Reading.find().sort({createdAt: -1})
-    .populate({
-      path: 'device',
-      options: {
-        lean: 1
-      }
-    })
+    .populate(population)
     .skip(skip)
     .limit(limit)
     .sort("-createdAt")
@@ -78,9 +80,11 @@ router.post("/", auth.authDevice, wrap(function*(req, res) {
   res.json(reading);
 }));
 */
-router.post('/', wrap(function* () {
+router.post('/', wrap(function* (req, res) {
   let reading = yield Reading.create({
     data: req.body.data,
+    meta: req.body.meta,
+    device: req.body.device,
     loc: [
       parseInt(_.get(req.body.meta, 'loc[0]', 0)),
       parseInt(_.get(req.body.meta, 'loc[1]', 0))
@@ -91,20 +95,21 @@ router.post('/', wrap(function* () {
 }));
 
 router.post("/:readingId", wrap(function* (req, res) {
-  let reading = Reading.findByIdAndUpdate(req.params.readingId, {
+  let reading = yield Reading.findByIdAndUpdate(req.params.readingId, {
     data: req.body.data,
-    type: req.body.type
+    type: req.body.type,
+    meta: req.body.meta
   }, {
     new: true,
     lean: true
   });
 
-  res.json(Readings.toJSON(reading));
+  res.json(Reading.toJSON(reading));
 }));
 
 router.get('/:readingId', wrap(function* (req, res) {
-  let reading = Reading
-    .findOneById(req.params.readingId)
+  let reading = yield Reading
+    .findById(req.params.readingId)
     .lean();
   
   if (!reading) {

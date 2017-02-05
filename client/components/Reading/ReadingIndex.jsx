@@ -7,6 +7,7 @@ import {NotificationManager} from 'react-notifications';
 
 import ReadingItem from './ReadingItem.jsx';
 import readingActions from '../../actions/readings';
+import deviceActions from '../../actions/devices';
 
 import ReadingNewDialog from './ReadingNewDialog.jsx';
 import ReadingEditDialog from './ReadingEditDialog.jsx';
@@ -25,11 +26,17 @@ const ReadingIndex = React.createClass({
     if (!this.props.readings.loaded) {
       this.props.fetchReadings();
     }
+    if(!this.props.devices.loaded) {
+      this.props.fetchDevices();
+    }
   },
  
   setModal(type, value) {
-    this.setState({...this.state, 
-      [type]: value
+    this.setState({
+      ...this.state,
+      modals: {
+        [type]: value
+      }
     });
   },
 
@@ -38,28 +45,29 @@ const ReadingIndex = React.createClass({
   },
 
   render () {
-    console.log(this.props.readings.readings);
     return <div>
       <AppBar title='Readings'>
         <Navigation type='horizontal'>
-          <Link label='New' onClick={this.setModal.bind(this, 'new', true)}/>
+          <Link label='New' onClick={this.openNewDialog}/>
           <Link label='Refresh' onClick={this.refreshReadings} />
         </Navigation>
       </AppBar>
 
       <ReadingNewDialog
+        ref='newDialog'
         active={!!this.state.modals.new}
         devices={this.props.devices.devices}
         close={this.setModal.bind(this, 'new', false)}
         refreshReadings={this.refreshReadings}
         selectedApp={this.props.apps.selectedApp}
+        createReading={this.props.createReading}
       />
       
       <ReadingEditDialog active={!!this.state.modals.edit}
         ref='editModal'
         reading={this.props.readings.currentReading}
         close={this.setModal.bind(this, 'edit', false)}
-        updateDevice={this.props.updateReading}
+        updateReading={this.props.updateReading}
         refreshReadings={this.refreshReadings}
       />
 
@@ -68,10 +76,15 @@ const ReadingIndex = React.createClass({
           return <ReadingItem
             reading={reading}
             key={`reading-item-${reading.id}`}
-            openEdit={this.setModal.bind(this, 'edit', true)}/>;
+            openEdit={this.openEditDialog.bind(this, reading.id)}/>;
       })}
       </List>
     </div>;
+  },
+
+  openNewDialog() {
+    this.refs.newDialog.reset();
+    this.setModal('new', true);
   },
 
   openEditDialog(readingId) {
@@ -82,7 +95,7 @@ const ReadingIndex = React.createClass({
     })
     .catch(err => {
       console.error(err);
-      NotificationManager.error(err);
+      NotificationManager.error('Error fetching reading');
     });
   },
 
@@ -103,6 +116,10 @@ export default connect(state => {
   return {
     fetchReadings(filter = {}) {
       return dispatch(readingActions.fetchReadings(filter));
+    },
+
+    fetchDevices(filter = {}) {
+      return dispatch(deviceActions.fetchDevices(filter));
     },
 
     fetchCurrentReading(readingId) {

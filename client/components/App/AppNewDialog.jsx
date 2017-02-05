@@ -48,6 +48,11 @@ export default React.createClass({
   },
 
   reset() {
-    this.setState({});
+    this.setState({
+      name: '',
+      description: '',
+      token: '',
+      secret: ''
+    });
   }
 });

@@ -3,6 +3,7 @@
 import React from 'react';
 import {Dialog, Input} from 'react-toolbox';
 import {NotificationManager} from 'react-notifications';
+import _ from 'lodash';
 
 export default React.createClass({
   getInitialState() {
@@ -28,8 +29,7 @@ export default React.createClass({
       <Input value={this.state.id} disabled={true}/>
       <Input value={this.state.name} label='Name' onChange={this.handleChange.bind(this, 'name')} />
       <Input value={this.state.type} label='Type' onChange={this.handleChange.bind(this, 'type')} />
-      <Input value={this.state.token} label='Token' disabled={true}/>
-        disabled={true}/>
+      <Input value={this.state.token} label='Token' disabled={true} onChange={this.handleChange.bind(this, 'token')}/>
     </Dialog>;
   },
 
@@ -60,19 +60,21 @@ export default React.createClass({
   handleRegenDeviceToken() {
     return this.props.regenDeviceToken(this.props.device.id)
     .then(data => {
-      return this.props.fetchCurrentDevice(this.props.device.id);
-    })
-    .then(data => {
-      this.reset();
+      this.props.close();
       NotificationManager.info('Secret has been regenerated');
     })
     .catch(err => {
       console.error(err);
-      NotificationManager.error('Token regeneratiomn failed');
+      NotificationManager.error('Token regeneration failed');
     });
   },
 
   reset() {
-    this.setState(this.props.device);
+    this.setState(_.assign({
+      id: '',
+      name: '',
+      type: '',
+      token: ''
+    }, this.props.device));
   }
 });

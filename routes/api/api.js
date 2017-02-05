@@ -12,11 +12,6 @@ const applications = require('./applications');
 const devices = require('./devices');
 const readings = require('./readings');
 
-router.get('/', (req, res) => {
-  res.json({});
-});
-
-
 router.use('/applications', applications);
 router.use('/devices', devices);
 router.use('/readings', readings);

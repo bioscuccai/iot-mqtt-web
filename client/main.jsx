@@ -11,6 +11,7 @@ import { Router, Route, IndexRoute,hashHistory} from 'react-router';
 import 'react-toolbox/lib/commons.scss';
 import 'react-notifications/lib/notifications.css';
 import 'highlight.js/styles/androidstudio.css';
+import 'ionicons/dist/css/ionicons.css';
 
 import Main from './components/Main/Main.jsx';
 import Container from './components/Main/Container.jsx';

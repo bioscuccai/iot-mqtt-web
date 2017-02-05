@@ -34,15 +34,15 @@ export default React.createClass({
       onEscKeyDown={this.props.close}
       onOverlayClick={this.props.close}>
       <Input type='text' value={this.state.id} label='Id' disabled={true} />
-      <Input type='text' multiLine={true} label='Data' value={this.state.data} onChange={this.handleChange.bind(this, 'data')} />
-      <Input type='text' multiLine={true} label='Meta' value={this.state.meta} onChange={this.handleChange.bind(this, 'meta')} />
+      <Input type='text' multiline={true} label='Data' value={this.state.data} onChange={this.handleChange.bind(this, 'data')} />
+      <Input type='text' multiline={true} label='Meta' value={this.state.meta} onChange={this.handleChange.bind(this, 'meta')} />
     </Dialog>;
   },
 
   handleChange(type, value) {
     this.setState({
       ...this.state,
-      [value]: type
+      [type]: value
     });
   },
   

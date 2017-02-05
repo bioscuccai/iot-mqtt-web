@@ -7,8 +7,8 @@ import {NotificationManager} from 'react-notifications';
 export default React.createClass({
   getInitialState() {
     return {
-      data: '',
-      meta: '',
+      data: '{}',
+      meta: '{}',
       device: null
     };
   },
@@ -35,15 +35,23 @@ export default React.createClass({
         value={this.state.device}
         onChange={this.handleChange.bind(this, 'device')}
         source={devices}/>
-      <Input label='Application' value={this.props.selectedApp.name} disabled={true}/>
-      <Input label='Data' value={this.state.data} multiLine={true}  onChange={this.handleChange.bind(this, 'data')}/>
+      <Input label='Data' value={this.state.data} multiline={true} onChange={this.handleChange.bind(this, 'data')}/>
+      <Input label='Meta' value={this.state.meta} multiline={true} onChange={this.handleChange.bind(this, 'meta')}/>
     </Dialog>;
   },
 
   handleChange(type, value) {
-    this.getState({
+    this.setState({
       ...this.state,
       [type]: value
+    });
+  },
+
+  reset() {
+    this.setState({
+      data: '{}',
+      meta: '{}',
+      device: null
     });
   },
 

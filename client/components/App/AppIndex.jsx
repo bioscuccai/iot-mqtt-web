@@ -23,7 +23,7 @@ const AppIndex = React.createClass({
     return <div>
       <AppBar title='Applications'>
         <Navigation type='horizontal'>
-          <Link label='New' onClick={this.setModal.bind(this, 'new', true)} />
+          <Link label='New' onClick={this.openNewDialog} />
           <Link label='Refresh' onClick={this.props.fetchApps}/>
         </Navigation>
       </AppBar>
@@ -68,6 +68,11 @@ const AppIndex = React.createClass({
       this.refs.editDialog.reset();
       this.setModal('edit', true);
     });
+  },
+
+  openNewDialog() {
+    this.refs.newDialog.reset();
+    this.setModal('new', true);
   }
 });
 
