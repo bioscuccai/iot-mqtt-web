@@ -13,7 +13,11 @@ COPY .bowerrc /usr/src/app/
 RUN npm i bower -g
 RUN npm i pm2 -g
 RUN npm i
-RUN bower install --allow-root --force-latest
+RUN cd client
+RUN npm i
+RUN npm i webpack -g
+RUN webpack
+RUN cd ..
 
 EXPOSE 5000
 EXPOSE 3008
