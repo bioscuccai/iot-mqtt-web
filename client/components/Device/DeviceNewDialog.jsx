@@ -8,7 +8,7 @@ export default React.createClass({
   getInitialState() {
     return {
       name: '',
-      appId: null,
+      application: '',
       type: ''
     };
   },
@@ -19,10 +19,23 @@ export default React.createClass({
       {label: 'Cancel', onClick: this.props.close}
     ];
 
+    let apps = this.props.apps.apps.map(app => {
+      return {
+        label: app.name,
+        value: app.id
+      };
+    });
+
     return <Dialog actions={actions} title='New Device'
       active={this.props.active}
       onEscKeyDown={this.props.close}
       onOverlayClick={this.props.close}>
+      <Dropdown
+        label='Application'
+        source={apps}
+        onChange={this.handleChange.bind(this, 'application')}
+        value={this.state.application}>
+      </Dropdown>
       <Input type='text' value={this.state.name} onChange={this.handleChange.bind(this, 'name')} label='Name'/>
       <Input type='text' value={this.state.type} onChange={this.handleChange.bind(this, 'type')} label='Type'/>
     </Dialog>;
@@ -36,8 +49,7 @@ export default React.createClass({
   
   handleCreateDevice() {
     this.props.createDevice({
-      ...this.state,
-      application: this.props.application.id
+      ...this.state
     })
     .then(data => {
       this.props.refreshDevices();

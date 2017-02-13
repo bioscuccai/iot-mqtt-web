@@ -69,6 +69,7 @@ const ReadingIndex = React.createClass({
         close={this.setModal.bind(this, 'edit', false)}
         updateReading={this.props.updateReading}
         refreshReadings={this.refreshReadings}
+        fetchCurrentReading={this.props.fetchCurrentReading}
       />
 
       <List>

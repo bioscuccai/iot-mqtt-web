@@ -43,8 +43,8 @@ function registerApplication(name, description){
   });
 }
 
-const storeReading = co.wrap(function*(token, data, type, meta){
-  let device = yield schema.Device.findOne({token}).populate('application');
+const storeReading = co.wrap(function*(deviceId, data, type, meta){
+  let device = yield schema.Device.findById(deviceId).populate('application');
   if (!device) {
     throw(new Error('invalid token'));
   }
@@ -66,7 +66,7 @@ const storeReading = co.wrap(function*(token, data, type, meta){
 
 const validApplication = co.wrap(function* (username, password){
   let appDb = yield schema.Application.findOne({
-    token: username,
+    _id: username,
     secret: password.toString()
   });
   if (appDb) {
@@ -74,7 +74,8 @@ const validApplication = co.wrap(function* (username, password){
     return {
       type: 'app',
       appToken: username,
-      appName: appDb.name
+      appName: appDb.name,
+      appId: appDb._id.toString()
     };
   } else {
     logger.error('App rejected');
@@ -83,23 +84,22 @@ const validApplication = co.wrap(function* (username, password){
 });
 
 const validDevice = co.wrap(function* (username, password) {
-  let appDb = yield schema.Application.findOne({token: username})
-  if(!appDb) {
-    logger.error('device/app rejected');
-    return reject(new Error('invalid app'));
-  }
-  let deviceDb = yield schema.Device.findOne({token: password});
+  let deviceDb = yield schema.Device.findOne({
+    _id: username,
+    token: password.toString()
+  });
   if(!deviceDb) {
     logger.error('Device rejected');
-    return reject(new Error("invalid device"));
+    throw new Error("invalid device");
   }
   logger.info(`Device authenticated: ${deviceDb.name}`);
   return {
     type: 'device',
-    deviceToken: password,
+    deviceId: deviceDb._id.toString(),
     deviceName: deviceDb.name,
     deviceType: deviceDb.type,
-    appToken: username
+    appToken: username,
+    appId: deviceDb.application.toString()
   };
 });
 
@@ -109,6 +109,7 @@ function validTokenPair(username, password) {
     validDevice(username, password)
   ]);
 }
+
 function mqttAuthenticate(client, username, password, callback) {
   if(!password || !username) {
     logger.error('No login given');
@@ -130,7 +131,9 @@ function mqttAuthorizePublish(client, topic, payload, callback) {
   if(client.user.type === 'app'){
     return callback(null, true);
   }
-  if (topic === `send_reading/${client.user.appToken}`) {
+  console.log('checkin');
+  console.log(`send_reading/${client.user.appId}`);
+  if (topic === `send_reading/${client.user.appId}`) {
     return callback(null, true);
   }
   logger.error(`Unauthorized publish to ${topic} from ${JSON.stringify(client.user, null, 2)}`);
@@ -138,18 +141,19 @@ function mqttAuthorizePublish(client, topic, payload, callback) {
   //callback(null, true);
 }
 function mqttAuthorizeSubscribe(client, topic, callback) {
+  console.log(JSON.stringify(client.user, null, 2));
   //apps can subscribe to everything
   logger.info(`${JSON.stringify(client.user)} subscribing to ${topic}`);
   if(client.user.type === 'app') {
     logger.info(`App ${client.user.appName} subscribed to ${topic}`);
     return callback(null, true);
   }
-  if(topic === `appmessage/${client.user.appToken}/global`) {
+  if(topic === `appmessage/${client.user.appId}/global`) {
     logger.info(`Device ${client.user.deviceName} subscribed to broadcast`);
     return callback(null, true);
   }
-  if(topic.startsWith(`appmessage/${client.user.appToken}/device_type/`)) {
-    let type = topic.replace(`appmessage/${client.user.appToken}/device_type/`, "");
+  if(topic.startsWith(`appmessage/${client.user.appId}/device_type/`)) {
+    let type = topic.replace(`appmessage/${client.user.appId}/device_type/`, "");
     if(type === client.user.deviceType) {
       logger.info(`Device ${client.user.deviceName} subscribed to type channel: ${type}`);
       return callback(null, true);
@@ -158,9 +162,9 @@ function mqttAuthorizeSubscribe(client, topic, callback) {
       return callback(new Error('rejected type'), false);
     }
   }
-  if(topic.startsWith(`appmessage/${client.user.appToken}/device/`)) {
-    let deviceToken = topic.replace(`appmessage/${client.user.appToken}/device/`, "");
-    if(deviceToken === client.user.deviceToken) {
+  if(topic.startsWith(`appmessage/${client.user.appId}/device/`)) {
+    let deviceId = topic.replace(`appmessage/${client.user.appId}/device/`, "");
+    if(deviceId === client.user.deviceId) {
       logger.info(`Device ${client.user.deviceName} subscribed to private channel`);
       return callback(null, true);
     } else {
@@ -240,7 +244,7 @@ services.moscaServer.on('published', (packet, client) => {
       let payload=JSON.parse(packet.payload.toString());
       logger.info('reading');
       logger.info(payload);
-      storeReading(client.user.deviceToken, payload.data, payload.type, payload.meta);
+      storeReading(client.user.deviceId, payload.data, payload.type, payload.meta);
     } catch(e){
       logger.error(`failed to parse payload: ${packet.payload.toString()}`);
     }

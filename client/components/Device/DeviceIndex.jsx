@@ -46,8 +46,9 @@ const DeviceIndex = React.createClass({
         active={!!this.state.modals.new}
         close={this.setModal.bind(this, 'new', false)}
         createDevice={this.props.createDevice}
-        selectedApp={this.props.selectedApp}
-        refreshDevices={this.refreshDevices}/>
+        refreshDevices={this.refreshDevices}
+        selectedApp={this.props.apps.selectedApp}
+        apps={this.props.apps}/>
 
       <DeviceEditDialog apps={this.props.apps.apps}
         ref='editModal'
@@ -82,11 +83,10 @@ const DeviceIndex = React.createClass({
   openEditDialog(deviceId) {
     this.props.fetchCurrentDevice(deviceId)
     .then(data => {
-      this.refs.editModal.reset();
       this.setModal('edit', true);
     });
   },
-  
+
   refreshDevices() {
     this.props.fetchDevices({
       appId: this.props.apps.selectedApp.id

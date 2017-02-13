@@ -59,7 +59,8 @@ export default {
     return dispatch => {
       return axios.post(`/api/devices`, {
         name: device.name,
-        type: device.type
+        type: device.type,
+        application: device.application
       })
       .then(data => {
         dispatch(this.createDeviceSuccess(data.data));
@@ -97,14 +98,14 @@ export default {
   
   regenDeviceToken(deviceId) {
     return dispatch => {
-      return axios.post(`/api/devices/${deviceId}`)
+      return axios.post(`/api/devices/${deviceId}/regenToken`)
       .then(data => {
         dispatch(this.regenDeviceTokenSuccess(data.data));
         return data.data;
       });
     };
   },
-  
+
   regenDeviceTokenSuccess(data) {
     return {
       type: 'REGEN_TOKEN_SUCCESS',

@@ -80,7 +80,7 @@ readingSchema.statics.toJSON = function (reading) {
   if (!reading) {
     return null;
   }
-  
+
   return {
     id: reading._id.toString(),
     data: reading.data,

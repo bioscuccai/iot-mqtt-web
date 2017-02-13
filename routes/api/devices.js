@@ -29,8 +29,29 @@ router.get("/", auth.authApplication, wrap(function* (req, res) {
 }));
 
 router.post("/", auth.authApplication, wrap(function* (req, res) {
-  let device = utils.registerDevice(req.body.name, req.body.type, req.body.applicationName);
+  let device = yield Device.create({
+    name: req.body.name,
+    type: req.body.type,
+    token: securerandom.hex(16),
+    application: req.body.application
+  });
+
+  yield device.populate(population).execPopulate();
+
   res.json(Device.toJSON(device));
+}));
+
+router.post('/batchCreate', wrap(function* (req, res) {
+  let devices = yield Device.create(_.map(req.body.devices, device => {
+    return {
+      name: device.name,
+      type: device.type,
+      token: securerandom.hex(16),
+      application: device.application
+    };
+  }));
+
+  res.json(devices);
 }));
 
 router.get('/:deviceId', wrap(function* (req, res) {
@@ -69,9 +90,11 @@ router.delete("/:deviceId", wrap(function* (req, res) {
   });
 }));
 
-router.get("/:deviceId/regenToken", auth.authApplication, wrap(function* (req, res) {
+router.post("/:deviceId/regenToken", auth.authApplication, wrap(function* (req, res) {
   let device = yield Device.findByIdAndUpdate(req.params.deviceId, {
-    token: securerandom.hex(16)
+    $set: {
+      token: securerandom.hex(16)
+    }
   }, {
     new: true
   });

@@ -10,7 +10,11 @@ export default React.createClass({
   },
 
   reset(){
-    this.setState(this.props.app);
+    //this.setState(this.props.app);
+  },
+
+  componentWillReceiveProps (nextProps) {
+    this.setState(nextProps.app);
   },
 
   render() {
@@ -40,7 +44,11 @@ export default React.createClass({
     .then(data => {
       NotificationManager.info('Application has been updated');
       this.props.fetchApps();
-      this.props.close();
+      return this.props.fetchCurrentApp(this.props.app.id);
+    })
+    .catch(err => {
+      console.error(err);
+      NotificationManager.error('Error updating application');
     });
   }
 });

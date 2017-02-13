@@ -15,6 +15,11 @@ export default React.createClass({
     };
   },
 
+  componentWillReceiveProps (nextProps) {
+    console.log(nextProps.device);
+    this.setState(nextProps.device);
+  },
+
   render(){
     let actions = [
       {label: 'Update', onClick: this.handleUpdate},
@@ -41,15 +46,14 @@ export default React.createClass({
   },
 
   handleUpdate() {
-    console.log('handle update');
     this.props.updateDevice({
       ...this.state,
       application: this.props.selectedApp.id
     })
     .then(data => {
       NotificationManager.info('Device has been updated');
-      this.props.close();
       this.props.refreshDevices();
+      return this.props.fetchCurrentDevice(this.props.device.id);
     })
     .catch(err => {
       console.error(err);
@@ -60,8 +64,8 @@ export default React.createClass({
   handleRegenDeviceToken() {
     return this.props.regenDeviceToken(this.props.device.id)
     .then(data => {
-      this.props.close();
       NotificationManager.info('Secret has been regenerated');
+      return this.props.fetchCurrentDevice(this.props.device.id);
     })
     .catch(err => {
       console.error(err);

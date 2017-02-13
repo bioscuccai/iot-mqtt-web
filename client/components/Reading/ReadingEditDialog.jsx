@@ -3,6 +3,7 @@
 import React from 'react';
 import {Dialog, Input} from 'react-toolbox';
 import {NotificationManager} from 'react-notifications';
+import _ from 'lodash';
 
 export default React.createClass({
   getInitialState() {
@@ -13,12 +14,15 @@ export default React.createClass({
     };
   },
 
+  componentWillReceiveProps (nextProps) {
+    console.log();
+    this.setState(_.assign({}, nextProps.reading, {
+      data: JSON.stringify(nextProps.reading.data),
+      meta: JSON.stringify(nextProps.reading.meta)
+    }));
+  },
+
   reset() {
-    this.setState({
-      ...this.props.reading,
-      data: JSON.stringify(this.props.reading.data),
-      meta: JSON.stringify(this.props.reading.meta)
-    });
   },
 
   render() {
@@ -50,8 +54,10 @@ export default React.createClass({
     this.props.updateReading(this.state)
     .then(data => {
       NotificationManager.info('Reading has been updated');
-      this.props.close();
       return this.props.refreshReadings();
+    })
+    .then( () => {
+      return this.props.fetchCurrentReading(this.props.reading.id);
     })
     .catch(err => {
       console.error(err);

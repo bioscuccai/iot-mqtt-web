@@ -38,7 +38,8 @@ const AppIndex = React.createClass({
         close={this.setModal.bind(this, 'edit', false)}
         updateApp={this.props.updateApp}
         fetchApps={this.props.fetchApps}
-        app={this.props.apps.currentApp} />
+        app={this.props.apps.currentApp}
+        fetchCurrentApp={this.props.fetchCurrentApp} />
 
       <List>
         {this.props.apps.apps.map(app => {

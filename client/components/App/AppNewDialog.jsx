@@ -42,8 +42,11 @@ export default React.createClass({
     .then(app => {
       this.props.close();
       this.props.fetchApps();
-      console.log('succ');
       NotificationManager.info('Application has been created');
+    })
+    .catch(err => {
+      console.error(err);
+      NotificationManager.error('Application creation failed');
     });
   },
 

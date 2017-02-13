@@ -33,6 +33,9 @@ router.get("/", auth.authApplication, wrap(function*(req, res) {
       //token: req.headers['x-iotfw-apptoken']
     })
     .select('')
+    .sort({
+      _id: -1
+    })
     .limit(limit)
     .skip(skip)
     .lean()

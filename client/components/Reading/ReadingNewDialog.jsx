@@ -61,6 +61,10 @@ export default React.createClass({
       NotificationManager.info('Reading has been created');
       this.props.close();
       this.props.refreshReadings();
+    })
+    .catch(err => {
+      console.error(err);
+      NotificationManager.error('Error creating reading');
     });
   }
 });
