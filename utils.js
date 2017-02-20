@@ -44,23 +44,19 @@ function registerApplication(name, description){
 }
 
 const storeReading = co.wrap(function*(deviceId, data, type, meta){
-  let device = yield schema.Device.findById(deviceId).populate('application');
-  if (!device) {
-    throw(new Error('invalid token'));
-  }
-  console.log(data);
+  let device = yield schema.Device.findById(deviceId).select('application').lean();
+
   let reading = yield schema.Reading.create({
-    device: device._id,
+    device: deviceId,
     application: device.application._id,
     data: data,
     type: type,
     loc: [_.get(meta, 'loc[0]', 0), _.get(meta, 'loc[1]', 0)]
   });
+
   logger.info('stored reading');
   logger.info(reading);
-  logger.info('device:');
-  logger.info(device);
-  readingWatcher.emit('new_reading', _.merge(reading.toObject(), {appToken: device.application.token})); //pass app token too
+  readingWatcher.emit('new_reading', _.merge(reading.toObject(), {appId: device.application.toString()}));
   return reading;
 });
 
@@ -236,9 +232,9 @@ services.moscaServer.on('published', (packet, client) => {
   if(packet.topic.startsWith('send_message/')) {
     logger.info('NEW MESSAGE');
     let payload=JSON.parse(packet.payload.toString());
-    sendMessage(payload, client.user.appToken);
+    sendMessage(payload, client.user.appId);
   }
-  
+
   if(packet.topic.startsWith('send_reading/')) {
     try {
       let payload=JSON.parse(packet.payload.toString());
@@ -255,7 +251,7 @@ readingWatcher.on('new_reading', reading => {
   logger.info('publised app event');
   logger.info(reading);
   services.moscaServer.publish({
-    topic: `appevent/${reading.appToken}`,
+    topic: `appevent/${reading.appId}`,
     payload: JSON.stringify(reading)
   });
 });

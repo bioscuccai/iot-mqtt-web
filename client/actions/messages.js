@@ -3,10 +3,14 @@
 import axios from 'axios';
 
 export default {
-  sendMessage(payload) {
-    return (dispatch, getState) => {
-      return axios.post('/api/messages', {
-        message: payload.message
+  sendMessage(appId, message) {
+    return (dispatch) => {
+      return axios.post(`/api/applications/${appId}/messages`, {
+        payload: {
+          targetDevice: message.targetDevice,
+          targetDeviceType: message.targetDeviceType,
+          message: message.message
+        }
       })
       .then(data => {
         dispatch(this.sendMessageSuccess(data.data));

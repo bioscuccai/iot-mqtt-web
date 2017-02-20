@@ -71,6 +71,7 @@ readingSchema.statics.toJSON = function (reading) {
     loc: reading.loc,
     data: reading.data,
     meta: reading.meta,
+    type: reading.type,
     createdAt: reading.createdAt,
     updatedAt: reading.updatedAt
   };
