@@ -288,18 +288,18 @@ function sendMessage(payload, appToken){
 
 services.moscaServer.on("published", (packet, client) => {
   crayon.warn("PUBLISHED MESSAGE");
-  console.log(packet);
+  //console.log(packet);
   console.log("topic: "+packet.topic);
   //console.log("payload: "+packet.payload.toString());
   
   //messages from the application to the devices
-  if(packet.topic==="send_message"){
+  if(packet.topic.startsWith("send_message")){
     crayon.info("NEW MESSAGE");
     let payload=JSON.parse(packet.payload.toString());
     sendMessage(payload, client.user.appToken);
   }
   
-  if(packet.topic==="send_reading"){
+  if(packet.topic.startsWith("send_reading")){
     try {
       let payload=JSON.parse(packet.payload.toString());
       crayon.info("reading");

@@ -20,6 +20,7 @@
     "lodash": "~3.10.1",
     "angular-chart.js": "~0.8.8",
     "angular-highlightjs": "~0.5.1",
-    "ionicons": "~2.0.1"
+    "ionicons": "~2.0.1",
+    "angular": "^1.6.2"
   }
 }
